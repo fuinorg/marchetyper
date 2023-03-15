@@ -1,0 +1,51 @@
+<marchetyper-config 
+    src-dir="example"
+    dest-dir="archetype"
+    binary-files=".*\.(jar|gitignore)"
+    text-files="(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile"
+    test="true">
+
+    <archetype group-id="org.fuin.archetypes" artifact-id="example-archetype" version="0.1.0-SNAPSHOT">
+        <property name="groupId" default="com.mycompany" test="org.fuin.examples" />
+        <property name="artifactId" default="myapp" test="example-app" />
+        <property name="version" default="0.1.0-SNAPSHOT" test="0.1.0-SNAPSHOT" />
+        <property name="pkgPath" default="com/mycompany/myapp" test="org/fuin/examples/app" />
+        <property name="pkgName" default="com.mycompany.myapp" test="org.fuin.examples.app" />
+        <property name="description" default="My cool application" test="A minimal Java standalone application with Maven build" />
+        <property name="appName" default="MyApp" test="ExampleApp" />
+    </archetype>
+     
+    <!-- Replacement definition for path elements -->
+    <path-mappings>
+        <mapping search="org/fuin/examples/app" replace="__pkgPath__" />
+        <mapping search="ExampleApp" replace="__appName__" />
+    </path-mappings>
+
+    <!-- Replacement definition for text files -->
+    <text-file-mappings>
+        <mapping search="&lt;groupId&gt;org.fuin.examples&lt;/groupId&gt;" replace="&lt;groupId&gt;${groupId}&lt;/groupId&gt;" file="pom\.xml" />
+        <mapping search="&lt;artifactId&gt;example-app&lt;/artifactId&gt;" replace="&lt;artifactId&gt;${artifactId}&lt;/artifactId&gt;" file="pom\.xml" />
+        <mapping search="&lt;description&gt;A minimal Java standalone application with Maven build&lt;/description&gt;" replace="&lt;description&gt;${description}&lt;/description&gt;" file="pom\.xml" />
+        <mapping search="&lt;company&gt;fuinorg&lt;/company&gt;" replace="&lt;company&gt;${company}&lt;/company&gt;" file="pom\.xml" />
+        <mapping search="org.fuin.examples.app" replace="${pkgName}" file=".*\.java" />
+        <mapping search="org/fuin/examples/app" replace="${pkgPath}" file=".*\.md" />
+        <mapping search="My cool application" replace="${description}" file=".*\.md" />
+        <mapping search="example-app" replace="${artifactId}" file=".*\.md" />        
+        <mapping search="ExampleApp" replace="${appName}" file=".*\.md" />        
+    </text-file-mappings>
+
+    <!-- Directories and files that will always be copied (also if part of 'file-excludes') -->
+    <file-includes>
+        <filter file=".gitignore" />
+        <filter path=".*/\.mvn/.*" />
+    </file-includes>
+
+    <!-- Directories and files that will not be copied -->
+    <file-excludes>
+        <filter path=".*/target/.*" />
+        <filter path=".*/\..*/.*"/>
+        <filter file="^\..*" />
+        <filter file=".*\.log" />
+    </file-excludes>
+
+</marchetyper-config>

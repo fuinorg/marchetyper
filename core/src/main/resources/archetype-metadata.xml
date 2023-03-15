@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archetype-descriptor name="${archetype.groupId}.${archetype.artifactId}">
+
+	<requiredProperties>
+		#foreach( $prop in $archetype.properties )
+		<requiredProperty key="${prop.name}"><defaultValue>${prop.defaultValue}</defaultValue></requiredProperty>
+		#end
+	</requiredProperties>
+
+	<fileSets>	    
+		#foreach( $file in $textFiles )
+		<fileSet filtered="true">
+			<directory>#if($file.parent)${file.parent}#end</directory>
+			<includes>
+				<include>${file.name}</include>
+			</includes>
+		</fileSet>
+		#end
+		#foreach( $file in $binaryFiles )
+		<fileSet filtered="false">
+			<directory>#if($file.parent)${file.parent}#end</directory>
+			<includes>
+				<include>${file.name}</include>
+			</includes>
+		</fileSet>
+		#end
+	</fileSets>
+
+</archetype-descriptor>
