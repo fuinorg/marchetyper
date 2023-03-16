@@ -27,6 +27,7 @@ import java.io.LineNumberReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,8 @@ import org.junit.jupiter.api.Test;
  * Test for {@link ReplacingFileReader}.
  */
 public final class ReplacingFileReaderTest {
+
+    private static final String LF = System.lineSeparator();
 
     @Test
     public void testMap() throws IOException {
@@ -72,13 +75,13 @@ public final class ReplacingFileReaderTest {
 
         try (final ReplacingFileReader testee = new ReplacingFileReader(srcFile, 1024, ".*\\.(java)",
                 new Mapping(
-                        "/**\n * Copyright (C) 2023 Future Invent IT Consulting GmbH. All rights reserved. \n * http://www.fuin.org/\n *\n * This library is free software; you can redistribute it and/or modify it under\n * the terms of the GNU Lesser General Public License as published by the Free\n * Software Foundation; either version 3 of the License, or (at your option) any\n * later version.\n *\n * This library is distributed in the hope that it will be useful, but WITHOUT\n * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more\n * details.\n *\n * You should have received a copy of the GNU Lesser General Public License\n * along with this library. If not, see http://www.gnu.org/licenses/.\n */\n",
-                        "${javaDocCopyright}\n"),
+                        "/**" + LF + " * Copyright (C) 2023 Future Invent IT Consulting GmbH. All rights reserved. " + LF + " * http://www.fuin.org/" + LF + " *" + LF + " * This library is free software; you can redistribute it and/or modify it under" + LF + " * the terms of the GNU Lesser General Public License as published by the Free" + LF + " * Software Foundation; either version 3 of the License, or (at your option) any" + LF + " * later version." + LF + " *" + LF + " * This library is distributed in the hope that it will be useful, but WITHOUT" + LF + " * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS" + LF + " * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more" + LF + " * details." + LF + " *" + LF + " * You should have received a copy of the GNU Lesser General Public License" + LF + " * along with this library. If not, see http://www.gnu.org/licenses/." + LF + " */" + LF + "",
+                        "${javaDocCopyright}" + LF + ""),
                 new Mapping("Quickstart", "${appName}"),
                 new Mapping("org.fuin.jee7restswagquick", "${pkgName}"))) {
 
             try (final Writer writer = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(destFile), Charset.forName("utf-8")))) {
+                    new OutputStreamWriter(new FileOutputStream(destFile), StandardCharsets.UTF_8))) {
 
                 IOUtils.copy(testee, writer);
 
@@ -87,7 +90,7 @@ public final class ReplacingFileReaderTest {
         }
 
         // VERIFY
-        assertThat(destFile).hasSameContentAs(expectedFile);
+        assertThat(destFile).hasSameTextualContentAs(expectedFile);
 
     }
 

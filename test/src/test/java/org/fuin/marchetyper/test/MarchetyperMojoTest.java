@@ -30,6 +30,8 @@ import org.junit.jupiter.api.Test;
  */
 public class MarchetyperMojoTest {
 
+    private static final String FS = File.separator;
+    
     // CHECKSTYLE:OFF Test
 
     private static final String DIV = "===================================";
@@ -63,10 +65,10 @@ public class MarchetyperMojoTest {
         verifier.verifyErrorFreeLog();
 
         verifier.verifyTextInLog("Using config file:");
-        verifier.verifyTextInLog("Copy text example/pom.xml to archetype/src/main/resources/archetype-resources/pom.xml");
-        verifier.verifyTextInLog("Copy text example/src/test/java/org/fuin/examples/app/ExampleAppTest.java to archetype/src/main/resources/archetype-resources/src/test/java/__pkgPath__/__appName__Test.java");
-        verifier.verifyTextInLog("Copy text example/src/main/java/org/fuin/examples/app/ExampleApp.java to archetype/src/main/resources/archetype-resources/src/main/java/__pkgPath__/__appName__.java");
-        verifier.verifyTextInLog("Copy text example/README.md to archetype/src/main/resources/archetype-resources/README.md");
+        verifier.verifyTextInLog("Copy text example" + FS + "pom.xml to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "pom.xml");
+        verifier.verifyTextInLog("Copy text example" + FS + "src" + FS + "test" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS + "app" + FS + "ExampleAppTest.java to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS + "test" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__Test.java");
+        verifier.verifyTextInLog("Copy text example" + FS + "src" + FS + "main" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS + "app" + FS + "ExampleApp.java to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS + "main" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__.java");
+        verifier.verifyTextInLog("Copy text example" + FS + "README.md to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "README.md");
 
     }
 

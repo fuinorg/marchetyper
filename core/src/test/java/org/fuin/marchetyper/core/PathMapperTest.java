@@ -38,31 +38,32 @@ public final class PathMapperTest {
         // PREPARE
         final File srcDir = new File("src/test/resources" + this.getClass().getSimpleName());
         final File targetDir = new File("target" + this.getClass().getSimpleName());
+        final String targetPath = path(targetDir);
         //@formatter:off
-        final PathMapper testee = new PathMapper(srcDir, targetDir, 
-                new Mapping("b/c", "__bc__"), 
-                new Mapping("e/f/g", "__efg__"), 
+        final PathMapper testee = new PathMapper(srcDir, targetDir,
+                new Mapping("b/c", "__bc__"),
+                new Mapping("e/f/g", "__efg__"),
                 new Mapping("x/y/z", "__xyz__"));
         //@formatter:on
 
         // TEST & VERIFY
 
         // Valid KeyValues
-        
+
         //@formatter:off
-        assertThat(testee.map(new File(srcDir, "G.txt")).toString()).isEqualTo(targetDir + "/G.txt");
-        assertThat(testee.map(new File(srcDir, "a/b/c/D.txt")).toString()).isEqualTo(targetDir + "/a/__bc__/D.txt");
-        assertThat(testee.map(new File(srcDir, "a/b/c/d/e/f/g/G.txt")).toString()).isEqualTo(targetDir + "/a/__bc__/d/__efg__/G.txt");
-        assertThat(testee.map(new File(srcDir, "x/y/z/Z.txt")).toString()).isEqualTo(targetDir + "/__xyz__/Z.txt");
+        assertThat(path(testee.map(new File(srcDir, "G.txt")))).isEqualTo(targetPath + "/G.txt");
+        assertThat(path(testee.map(new File(srcDir, "a/b/c/D.txt")))).isEqualTo(targetPath + "/a/__bc__/D.txt");
+        assertThat(path(testee.map(new File(srcDir, "a/b/c/d/e/f/g/G.txt")))).isEqualTo(targetPath + "/a/__bc__/d/__efg__/G.txt");
+        assertThat(path(testee.map(new File(srcDir, "x/y/z/Z.txt")))).isEqualTo(targetPath + "/__xyz__/Z.txt");
         //@formatter:on
 
         // File inside KeyValue 'b/c' will be mapped 1:1 to target
-        assertThat(testee.map(new File(srcDir, "a/b/B.txt")).toString()).isEqualTo(targetDir + "/a/b/B.txt");
+        assertThat(path(testee.map(new File(srcDir, "a/b/B.txt")))).isEqualTo(targetPath + "/a/b/B.txt");
 
         // Test usage with streams
-        
+
         //@formatter:off
-        final List<File> result = 
+        final List<File> result =
              Arrays.asList(new File(srcDir, "a/b/c/d/D.txt"), new File(srcDir, "x/y/z/a/Z.txt"), new File(srcDir, "a/A.txt"))
             .stream()
             .map(testee::map)
@@ -71,6 +72,10 @@ public final class PathMapperTest {
         assertThat(result).containsExactly(new File(targetDir, "a/__bc__/d/D.txt"),
                 new File(targetDir, "__xyz__/a/Z.txt"), new File(targetDir, "a/A.txt"));
 
+    }
+
+    private static String path(File file) {
+        return file.toString().replace(File.separatorChar, '/');
     }
 
 }
