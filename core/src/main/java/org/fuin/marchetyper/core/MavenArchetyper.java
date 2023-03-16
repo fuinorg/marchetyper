@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -159,8 +160,8 @@ public final class MavenArchetyper {
 
         final VelocityContext context = new VelocityContext();
         context.put("archetype", config.getArchetype());
-        context.put("textFiles", files.textFiles);
-        context.put("binaryFiles", files.binaryFiles);
+        context.put("textFiles", wrap(files.textFiles));
+        context.put("binaryFiles", wrap(files.binaryFiles));
 
         merge(ve, context, "archetype-metadata.xml", new File(metaInfMavenDir, "archetype-metadata.xml"));
         merge(ve, context, "pom.xml", new File(destDir, "pom.xml"));
@@ -273,6 +274,10 @@ public final class MavenArchetyper {
         return files;
     }
 
+    private static List<VelocityFileWrapper> wrap(List<File> files) {
+        return files.stream().map(file -> new VelocityFileWrapper(file)).collect(Collectors.toList());
+    }
+
     private static class Files {
 
         public List<File> binaryFiles = new ArrayList<>();
@@ -280,5 +285,27 @@ public final class MavenArchetyper {
         public List<File> textFiles = new ArrayList<>();
 
     }
+
+    public static final class VelocityFileWrapper {
+
+        private final File file;
+
+        public VelocityFileWrapper(File file) {
+            this.file = file;
+        }
+
+        public String getName() {
+            return file.getName();
+        }
+
+        public String getParent() {
+            if (file.getParent() == null) {
+                return "";
+            }
+            return file.getParent().replace(File.separatorChar, '/');
+        }
+
+    }
+
 
 }
