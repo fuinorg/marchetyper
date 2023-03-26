@@ -17,6 +17,19 @@
  */
 package org.fuin.marchetyper.core;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.Template;
@@ -30,20 +43,6 @@ import org.fuin.utils4j.fileprocessor.FileHandlerResult;
 import org.fuin.utils4j.fileprocessor.FileProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
 
 /**
  * Maven Archtyper console application.
@@ -76,12 +75,14 @@ public final class MavenArchetyper {
     }
 
     /**
-     * Executes the application with the given base directory.
+     * Generated the archetype with the given base directory.
      *
-     * @param baseDir Base directory.
+     * @param baseDir
+     *            Base directory.
      */
-    public final void execute(File baseDir) {
+    public void generate(File baseDir) {
 
+        LOG.info("baseDir: {}", baseDir);
         final File destDir = config.getDestDir(baseDir);
         try {
             final Path destPath = destDir.toPath();
@@ -92,6 +93,9 @@ public final class MavenArchetyper {
         } catch (final IOException ex) {
             throw new RuntimeException("Error deleting destination directory " + destDir, ex);
         }
+        LOG.info("destDir: {}", destDir);
+        final File srcDir = config.getSrcDir(baseDir);
+        LOG.info("srcDir: {}", srcDir);
 
         final File destSrc = new File(destDir, "src");
         final File destSrcMain = new File(destSrc, "main");
@@ -100,62 +104,8 @@ public final class MavenArchetyper {
         final File metaInf = new File(destSrcMainResources, "META-INF");
         final File metaInfMaven = new File(metaInf, "maven");
 
-        final Files destFiles = copyFiles(baseDir, config, mappings, archetypeResources);
+        final Files destFiles = copyFiles(srcDir, destDir, config, mappings, archetypeResources);
         createArchetypeMetadata(destDir, metaInfMaven, config, archetypeResources, destFiles);
-
-        if (config.isTest()) {
-            testArchetype(baseDir);
-        }
-
-    }
-
-    private void testArchetype(File baseDir) {
-
-        // Install archetype
-        new MavenExecutor(baseDir, "clean", "install").execute();
-
-        // Test archetype
-        final File tmpDir = createArchetypeTestProjectDir();
-        LOG.info("Create test project with archetype: {}", tmpDir);
-        final Properties generatePops = new Properties();
-        generatePops.put("archetypeGroupId", config.getArchetype().getGroupId());
-        generatePops.put("archetypeArtifactId", config.getArchetype().getArtifactId());
-        generatePops.put("archetypeVersion", config.getArchetype().getVersion());
-        for (final Property property : config.getArchetype().getProperties()) {
-            generatePops.put(property.getName(), property.getTestValue());
-        }
-        generatePops.put("interactiveMode", "false");
-        new MavenExecutor(tmpDir, generatePops, "archetype:generate").execute();
-
-        // Remove archetype
-        final Properties purgeProps = new Properties();
-        purgeProps.put("manualInclude",
-                config.getArchetype().getGroupId() + ":" + config.getArchetype().getArtifactId());
-        new MavenExecutor(baseDir, purgeProps, "dependency:purge-local-repository").execute();
-
-        // Compare source with test archetype
-        final StringBuilder log = new StringBuilder();
-        final Property artifactProperty = config.getArchetype().findProperty("artifactId");
-        final File targetDir = new File(tmpDir, artifactProperty.getTestValue());
-        new DirectoryCompare(config).compare(config.getSrcDir(baseDir).toPath(), targetDir.toPath(), log);
-        if (log.length() != 0) {
-            throw new IllegalStateException("Differences found:\n" + log);
-        }
-
-    }
-
-    private File createArchetypeTestProjectDir() {
-        final File tmpDir = new File(Utils4J.getTempDir(), "maven-archetyper-test");
-        if (tmpDir.exists()) {
-            try {
-                FileUtils.deleteDirectory(tmpDir);
-            } catch (final IOException ex) {
-                throw new RuntimeException("Error creating temp directory", ex);
-            }
-        }
-        tmpDir.mkdir();
-        LOG.info("Archetype test project directory: {}", tmpDir);
-        return tmpDir;
     }
 
     private void createArchetypeMetadata(final File destDir, final File metaInfMavenDir, final Config config, final File resourcesDir,
@@ -195,15 +145,14 @@ public final class MavenArchetyper {
         return ve;
     }
 
-    private static Files copyFiles(final File baseDir, final Config config, final List<Mapping> mappings,
-                                   final File archetypeResources) {
+    private static Files copyFiles(final File srcDir, final File destDir, final Config config, final List<Mapping> mappings,
+            final File archetypeResources) {
 
-        final PathMapper pathMapper = new PathMapper(config.getSrcDir(baseDir), archetypeResources,
-                config.getPathMappings());
+        final PathMapper pathMapper = new PathMapper(srcDir, archetypeResources, config.getPathMappings());
 
         final Files files = new Files();
 
-        allFiles(config.getSrcDir(baseDir)).stream().filter((file) -> {
+        allFiles(srcDir).stream().filter((file) -> {
             if (config.includes(file)) {
                 return true;
             }
@@ -215,10 +164,10 @@ public final class MavenArchetyper {
                 destFile.getParentFile().mkdirs();
             }
             if (config.isBinary(srcFile)) {
-                copyBinaryFile(srcFile, destFile);
+                copyBinaryFile(srcDir, srcFile, destDir, destFile);
                 addDestFile(files.binaryFiles, archetypeResources, destFile);
             } else if (config.isText(srcFile)) {
-                copyTextFile(srcFile, destFile, config.getTextFiles(), config.getVariables(), mappings);
+                copyTextFile(srcDir, srcFile, destDir, destFile, config.getTextFiles(), config.getVariables(), mappings);
                 addDestFile(files.textFiles, archetypeResources, destFile);
             } else {
                 throw new IllegalStateException("File found that is neither binary nor text file: " + srcFile);
@@ -236,8 +185,8 @@ public final class MavenArchetyper {
         files.add(relativeFile);
     }
 
-    private static void copyBinaryFile(final File srcFile, final File destFile) {
-        LOG.info("Copy binary {} to {}", srcFile, destFile);
+    private static void copyBinaryFile(final File srcDir, final File srcFile, final File destDir, final File destFile) {
+        LOG.info("Copy binary {} to {}", Utils4J.getRelativePath(srcDir, srcFile), Utils4J.getRelativePath(destDir, destFile));
         try {
             FileUtils.copyFile(srcFile, destFile);
         } catch (final IOException ex) {
@@ -245,9 +194,9 @@ public final class MavenArchetyper {
         }
     }
 
-    private static void copyTextFile(final File srcFile, final File destFile, final String textFiles, final List<Variable> variables,
-            final List<Mapping> mappings) {
-        LOG.info("Copy text {} to {}", srcFile, destFile);
+    private static void copyTextFile(final File srcDir, final File srcFile, final File destDir, final File destFile, final String textFiles,
+            final List<Variable> variables, final List<Mapping> mappings) {
+        LOG.info("Copy text {} to {}", Utils4J.getRelativePath(srcDir, srcFile), Utils4J.getRelativePath(destDir, destFile));
         try (final ReplacingFileReader reader = new ReplacingFileReader(srcFile, 1024, textFiles, mappings)) {
             try (final Writer writer = new BufferedWriter(
                     new OutputStreamWriter(new FileOutputStream(destFile), Charset.forName("utf-8")))) {
@@ -313,6 +262,5 @@ public final class MavenArchetyper {
         }
 
     }
-
 
 }

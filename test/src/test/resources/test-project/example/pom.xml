@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.fuin.examples</groupId>
-    <artifactId>example-app</artifactId>
+    <groupId>org.fuin.example-archetype</groupId>
+    <artifactId>marchetyper-test-app</artifactId>
     <version>0.1.0-SNAPSHOT</version>
 
     <name>example-app</name>
@@ -35,6 +35,5 @@
         </dependency>
 
     </dependencies>
-
 
 </project>

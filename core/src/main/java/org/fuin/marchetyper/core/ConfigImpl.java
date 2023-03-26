@@ -17,11 +17,13 @@
  */
 package org.fuin.marchetyper.core;
 
-import org.fuin.objects4j.common.Contract;
-import org.fuin.objects4j.common.FileExists;
-import org.fuin.objects4j.common.FileExistsValidator;
-import org.fuin.objects4j.common.IsFile;
-import org.fuin.objects4j.common.IsFileValidator;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Collections;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
@@ -31,19 +33,22 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Collections;
-import java.util.List;
+
+import org.fuin.objects4j.common.Contract;
+import org.fuin.objects4j.common.FileExists;
+import org.fuin.objects4j.common.FileExistsValidator;
+import org.fuin.objects4j.common.IsFile;
+import org.fuin.objects4j.common.IsFileValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Application configuration.
  */
 @XmlRootElement(name = "marchetyper-config")
 public final class ConfigImpl implements Config {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigImpl.class);
 
     @XmlAttribute(name = "src-dir")
     private String srcDir;
@@ -110,7 +115,7 @@ public final class ConfigImpl implements Config {
         if (file.isAbsolute()) {
             return file;
         }
-        return new File(baseDir, srcDir);
+        return canonical(new File(baseDir, srcDir));
     }
 
     @Override
@@ -119,14 +124,14 @@ public final class ConfigImpl implements Config {
         if (file.isAbsolute()) {
             return file;
         }
-        return new File(baseDir, destDir);
+        return canonical(new File(baseDir, destDir));
     }
 
     @Override
     public final boolean isTest() {
         return test;
     }
-
+    
     public final Archetype getArchetype() {
         return archetype;
     }
@@ -180,6 +185,7 @@ public final class ConfigImpl implements Config {
         }
         for (final FileFilter filter : fileIncludes) {
             if (filter.applies(file)) {
+                LOG.info("File '{} included by: {}", file, filter);
                 return true;
             }
         }
@@ -192,6 +198,7 @@ public final class ConfigImpl implements Config {
         }
         for (final FileFilter filter : fileExcludes) {
             if (filter.applies(file)) {
+                LOG.info("File '{} excluded by: {}", file, filter);
                 return true;
             }
         }
@@ -210,6 +217,14 @@ public final class ConfigImpl implements Config {
             binaryFiles = ".*\\.(properties|md|java|xml)";
         }
         return srcFile.getName().matches(textFiles);
+    }
+
+    private File canonical(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException ex) {
+            throw new RuntimeException("Failed to get canonical file of: " + file, ex);
+        }
     }
 
     /**

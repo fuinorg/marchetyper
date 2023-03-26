@@ -99,6 +99,12 @@ public final class FileFilter {
 
     @Override
     public String toString() {
+        if (pathExpr == null) {
+            return "FileFilter [fileExpr=" + fileExpr + "]";
+        }
+        if (fileExpr == null) {
+            return "FileFilter [pathExpr=" + pathExpr + "]";
+        }
         return "FileFilter [pathExpr=" + pathExpr + ", fileExpr=" + fileExpr + "]";
     }
 

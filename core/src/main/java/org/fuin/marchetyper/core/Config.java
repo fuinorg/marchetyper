@@ -28,7 +28,8 @@ public interface Config {
     /**
      * Returns the source directory.
      *
-     * @param baseDir Base directory used in case the 'srcDir' is not absolute.
+     * @param baseDir
+     *            Base directory used in case the 'srcDir' is not absolute.
      * @return Source directory.
      */
     public File getSrcDir(File baseDir);
@@ -36,7 +37,8 @@ public interface Config {
     /**
      * Returns the destination directory.
      *
-     * @param baseDir Base directory used in case the 'destDir' is not absolute.
+     * @param baseDir
+     *            Base directory used in case the 'destDir' is not absolute.
      * @return Destination directory.
      */
     public File getDestDir(File baseDir);

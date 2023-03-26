@@ -17,7 +17,7 @@ See [pom.xml](pom.xml) that contains the converter plugin:
 In the root directory simply run a maven build:
 
 ```
-mvn org.fuin.marchetyper:marchetyper-maven-plugin:generate
+mvn clean install
 ```
 
 This will delete the [archetype](archetype) directory and recreate it with the converted content of the [example](example) project.

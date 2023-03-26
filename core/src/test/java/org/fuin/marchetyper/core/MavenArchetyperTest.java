@@ -17,15 +17,13 @@
  */
 package org.fuin.marchetyper.core;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for {@link MavenArchetyper}.
@@ -33,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MavenArchetyperTest {
 
     @Test
-    public void testExecute() throws IOException {
+    public void testGenerate() throws IOException {
 
         // PREPARE
         final File sourceTestProject = new File("../test/src/test/resources/test-project");
@@ -42,7 +40,7 @@ public class MavenArchetyperTest {
         final Config config = ConfigImpl.load(new File("src/test/resources/marchetyper-config.xml"));
 
         // TEST
-        new MavenArchetyper(config).execute(targetTestProject);
+        new MavenArchetyper(config).generate(targetTestProject);
 
         // VERIFY
         assertThat(true).isTrue();

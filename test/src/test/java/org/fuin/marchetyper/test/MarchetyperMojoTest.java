@@ -18,60 +18,123 @@
 package org.fuin.marchetyper.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.shared.verifier.Verifier;
-import org.junit.jupiter.api.BeforeEach;
+import org.fuin.marchetyper.core.Config;
+import org.fuin.marchetyper.core.ConfigImpl;
+import org.fuin.marchetyper.core.DirectoryCompare;
+import org.fuin.marchetyper.core.Property;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
 /**
  * Test for {@link MarchetyperMojo}.
  */
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MarchetyperMojoTest {
 
     private static final String FS = File.separator;
-    
+
     // CHECKSTYLE:OFF Test
 
     private static final String DIV = "===================================";
 
-    private static final File TEST_DIR = new File("target/test-classes/test-project");
+    private static final File TEST_PROJECT_DIR = new File("target/test-classes/test-project");
 
-    private Verifier verifier;
-
-    @BeforeEach
-    public void setup() throws Exception {
-        verifier = new Verifier(TEST_DIR.getAbsolutePath());
-        verifier.deleteArtifacts("org.fuin.marchetyper", "marchetyper-test-project", "0.0.1");
-    }
-
+    @Order(1)
     @Test
-    public void testMojo() throws VerificationException {
+    public void testMojo() throws VerificationException, IOException {
 
         // PREPARE
+        final Verifier generateVerifier = new Verifier(TEST_PROJECT_DIR.getAbsolutePath());
+        generateVerifier.deleteArtifacts("org.fuin.example-archetype");
+
+        // 1) Build "example" module
+        // 2) Generate "archetype" module (by running "marchetyper")
+        // 3) Install "archetype" into local repo
+        generateVerifier.addCliArguments("clean", "install", "-o");
 
         // TEST
-        verifier.addCliArguments( "org.fuin.marchetyper:marchetyper-maven-plugin:generate", "-X" );
-        verifier.execute();
+        generateVerifier.execute();
 
         // VERIFY
+        generateVerifier.verifyErrorFreeLog();
         System.out.println(DIV + " PLUGIN OUTPUT BEGIN " + DIV);
-        final List<String> lines = verifier.loadFile(verifier.getBasedir(), verifier.getLogFileName(), false);
+        final List<String> lines = generateVerifier.loadFile(generateVerifier.getBasedir(), generateVerifier.getLogFileName(), false);
         for (final String line : lines) {
             System.out.println(line);
         }
         System.out.println(DIV + " PLUGIN OUTPUT END " + DIV);
-        verifier.verifyErrorFreeLog();
+        generateVerifier.verifyErrorFreeLog();
 
-        verifier.verifyTextInLog("Using config file:");
-        verifier.verifyTextInLog("Copy text example" + FS + "pom.xml to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "pom.xml");
-        verifier.verifyTextInLog("Copy text example" + FS + "src" + FS + "test" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS + "app" + FS + "ExampleAppTest.java to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS + "test" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__Test.java");
-        verifier.verifyTextInLog("Copy text example" + FS + "src" + FS + "main" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS + "app" + FS + "ExampleApp.java to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS + "main" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__.java");
-        verifier.verifyTextInLog("Copy text example" + FS + "README.md to archetype" + FS + "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "README.md");
+        generateVerifier.verifyTextInLog("Using config file:");
+        generateVerifier
+                .verifyTextInLog("Copy text pom.xml to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "pom.xml");
+        generateVerifier.verifyTextInLog("Copy text src" + FS + "test" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS
+                + "app" + FS + "ExampleAppTest.java to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS
+                + "test" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__Test.java");
+        generateVerifier.verifyTextInLog("Copy text src" + FS + "main" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS
+                + "app" + FS + "ExampleApp.java to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS
+                + "main" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__.java");
+        generateVerifier.verifyTextInLog(
+                "Copy text README.md to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "README.md");
 
     }
 
-    // CHECKSTYLE:OFF Test
+    @Order(2)
+    @Test
+    public void testGenerate() throws VerificationException, IOException {
+
+        // PREPARE
+        final File configFile = new File("src/test/resources/test-project/marchetyper/marchetyper-config.xml");
+        final Config config = ConfigImpl.load(configFile);
+        final File srcDir = new File("src/test/resources/test-project/example");
+        final File tmpDir = mkdir(new File("target/" + this.getClass().getSimpleName()));
+
+        final Verifier generateVerifier = new Verifier(tmpDir.getAbsolutePath());
+        generateVerifier.setAutoclean(false);
+        final List<String> args = new ArrayList<>();
+        args.add("archetype:generate");
+        args.add("-o");
+        args.add("-DarchetypeGroupId=" + config.getArchetype().getGroupId());
+        args.add("-DarchetypeArtifactId=" + config.getArchetype().getArtifactId());
+        args.add("-DarchetypeVersion=" + config.getArchetype().getVersion());
+        for (final Property property : config.getArchetype().getProperties()) {
+            args.add("-D" + property.getName() + "=" + property.getTestValue());
+        }
+        args.add("-DinteractiveMode=false");
+        generateVerifier.addCliArguments(args.toArray(new String[args.size()]));
+
+        // TEST
+        generateVerifier.execute();
+
+        // VERIFY
+        generateVerifier.verifyErrorFreeLog();
+
+        // Compare source with test archetype
+        final StringBuilder log = new StringBuilder();
+        final Property artifactProperty = config.getArchetype().findProperty("artifactId");
+        final File targetDir = new File(tmpDir, artifactProperty.getTestValue());
+        new DirectoryCompare(config).compare(srcDir.toPath(), targetDir.toPath(), log);
+        if (log.length() != 0) {
+            throw new IllegalStateException("Differences found:\n" + log);
+        }
+
+    }
+
+    private File mkdir(final File tmpDir) throws IOException {
+        if (tmpDir.exists()) {
+            FileUtils.deleteDirectory(tmpDir);
+        }
+        tmpDir.mkdirs();
+        return tmpDir;
+    }
 
 }

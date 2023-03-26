@@ -32,7 +32,6 @@
         <module>core</module>
         <module>plugin</module>
         <module>test</module>
-        <module>app</module>
     </modules>
 
     <dependencyManagement>

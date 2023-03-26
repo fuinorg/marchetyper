@@ -1,6 +1,6 @@
 <marchetyper-config 
-    src-dir="example"
-    dest-dir="archetype"
+    src-dir="../example"
+    dest-dir="../archetype"
     binary-files=".*\.(jar|gitignore)"
     text-files="(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile"
     test="true">
@@ -9,7 +9,7 @@
         <variable name="pkgPath" source="pkgName" transform="DOT_2_SLASH" />
     </variables>
 
-    <archetype group-id="org.fuin.archetypes" artifact-id="example-archetype" version="0.1.0-SNAPSHOT">
+    <archetype group-id="org.fuin.example-archetype" artifact-id="marchetyper-test-archetype" version="0.1.0-SNAPSHOT">
         <property name="groupId" default="com.mycompany" test="org.fuin.examples" />
         <property name="artifactId" default="myapp" test="example-app" />
         <property name="version" default="0.1.0-SNAPSHOT" test="0.1.0-SNAPSHOT" />
@@ -48,7 +48,7 @@
 
     <!-- Directories and files that will not be copied -->
     <file-excludes>
-        <filter path=".*/target/.*" />
+        <filter path=".*/test-project/example/target/.*" />
         <filter path=".*/\..*/.*"/>
         <filter file="^\..*" />
         <filter file=".*\.log" />

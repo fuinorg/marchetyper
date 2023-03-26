@@ -35,14 +35,20 @@ import org.slf4j.impl.StaticLoggerBinder;
  * A customizable source code generator plugin for maven.
  */
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.VERIFY)
-public final class MarchetyperMojo extends AbstractMojo {
+public final class MarchetyperGenerateMojo extends AbstractMojo {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MarchetyperMojo.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MarchetyperGenerateMojo.class);
+
+    /**
+     * The base directory.
+     */
+    @Parameter(property = "configFile", defaultValue = "${basedir}", readonly = true)
+    private File baseDir;
 
     /**
      * The configuration file.
      */
-    @Parameter(property = "configFile", defaultValue = "${basedir}/marchetyper-config.xml", readonly = true )
+    @Parameter(property = "configFile", defaultValue = "${basedir}/marchetyper-config.xml", readonly = true)
     private File configFile;
 
     @Override
@@ -56,7 +62,7 @@ public final class MarchetyperMojo extends AbstractMojo {
         LOG.info("Using config file: {}", configFile);
 
         final Config config = ConfigImpl.load(configFile);
-        new MavenArchetyper(config).execute(configFile.getParentFile());
+        new MavenArchetyper(config).generate(baseDir);
 
     }
 
