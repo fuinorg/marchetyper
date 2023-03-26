@@ -52,7 +52,7 @@ public class MarchetyperMojoTest {
         // PREPARE
 
         // TEST
-        verifier.addCliArgument( "org.fuin.marchetyper:marchetyper-maven-plugin:generate" );
+        verifier.addCliArguments( "org.fuin.marchetyper:marchetyper-maven-plugin:generate", "-X" );
         verifier.execute();
 
         // VERIFY

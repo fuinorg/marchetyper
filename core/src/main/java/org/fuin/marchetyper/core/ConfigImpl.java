@@ -17,13 +17,11 @@
  */
 package org.fuin.marchetyper.core;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Collections;
-import java.util.List;
+import org.fuin.objects4j.common.Contract;
+import org.fuin.objects4j.common.FileExists;
+import org.fuin.objects4j.common.FileExistsValidator;
+import org.fuin.objects4j.common.IsFile;
+import org.fuin.objects4j.common.IsFileValidator;
 
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
@@ -33,12 +31,13 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import org.fuin.objects4j.common.Contract;
-import org.fuin.objects4j.common.FileExists;
-import org.fuin.objects4j.common.FileExistsValidator;
-import org.fuin.objects4j.common.IsFile;
-import org.fuin.objects4j.common.IsFileValidator;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Application configuration.
@@ -106,13 +105,21 @@ public final class ConfigImpl implements Config {
     }
 
     @Override
-    public final File getSrcDir() {
-        return new File(srcDir);
+    public final File getSrcDir(final File baseDir) {
+        final File file = new File(srcDir);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        return new File(baseDir, srcDir);
     }
 
     @Override
-    public final File getDestDir() {
-        return new File(destDir);
+    public final File getDestDir(final File baseDir) {
+        final File file = new File(destDir);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        return new File(baseDir, destDir);
     }
 
     @Override

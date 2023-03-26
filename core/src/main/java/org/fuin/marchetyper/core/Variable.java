@@ -109,9 +109,6 @@ public final class Variable {
         if (source == null) {
             throw new ConstraintViolationException("A 'source' attribute is required [" + name + "]");
         }
-        if (archetype.findProperty(source) == null) {
-            throw new ConstraintViolationException("The source property '" + source + "' was not found [" + name + "]");
-        }
         if (transform == null) {
             throw new ConstraintViolationException("A 'transform' attribute is required [" + name + "]");
         }

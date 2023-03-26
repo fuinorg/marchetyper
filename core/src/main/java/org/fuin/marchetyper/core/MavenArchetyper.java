@@ -17,20 +17,6 @@
  */
 package org.fuin.marchetyper.core;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.Template;
@@ -44,6 +30,20 @@ import org.fuin.utils4j.fileprocessor.FileHandlerResult;
 import org.fuin.utils4j.fileprocessor.FileProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * Maven Archtyper console application.
@@ -76,40 +76,43 @@ public final class MavenArchetyper {
     }
 
     /**
-     * Executes the application.
+     * Executes the application with the given base directory.
+     *
+     * @param baseDir Base directory.
      */
-    public final void execute() {
+    public final void execute(File baseDir) {
 
+        final File destDir = config.getDestDir(baseDir);
         try {
-            final Path path = config.getDestDir().getAbsoluteFile().toPath();
-            if (path.getNameCount() < 1) {
-                throw new RuntimeException("Cannot delete root directory" + config.getDestDir());
+            final Path destPath = destDir.toPath();
+            if (destPath.getNameCount() < 1) {
+                throw new RuntimeException("Cannot delete root directory" + destDir);
             }
-            FileUtils.deleteDirectory(config.getDestDir());
+            FileUtils.deleteDirectory(destDir);
         } catch (final IOException ex) {
-            throw new RuntimeException("Error deleting destination directory " + config.getDestDir(), ex);
+            throw new RuntimeException("Error deleting destination directory " + destDir, ex);
         }
 
-        final File destSrc = new File(config.getDestDir(), "src");
+        final File destSrc = new File(destDir, "src");
         final File destSrcMain = new File(destSrc, "main");
         final File destSrcMainResources = new File(destSrcMain, "resources");
         final File archetypeResources = new File(destSrcMainResources, "archetype-resources");
         final File metaInf = new File(destSrcMainResources, "META-INF");
         final File metaInfMaven = new File(metaInf, "maven");
 
-        final Files destFiles = copyFiles(config, mappings, archetypeResources);
-        createArchetypeMetadata(config.getDestDir(), metaInfMaven, config, archetypeResources, destFiles);
+        final Files destFiles = copyFiles(baseDir, config, mappings, archetypeResources);
+        createArchetypeMetadata(destDir, metaInfMaven, config, archetypeResources, destFiles);
 
         if (config.isTest()) {
-            testArchetype();
+            testArchetype(baseDir);
         }
 
     }
 
-    private void testArchetype() {
+    private void testArchetype(File baseDir) {
 
         // Install archetype
-        new MavenExecutor(config.getDestDir(), "clean", "install").execute();
+        new MavenExecutor(baseDir, "clean", "install").execute();
 
         // Test archetype
         final File tmpDir = createArchetypeTestProjectDir();
@@ -126,14 +129,15 @@ public final class MavenArchetyper {
 
         // Remove archetype
         final Properties purgeProps = new Properties();
-        purgeProps.put("manualInclude", config.getArchetype().getGroupId() + ":" + config.getArchetype().getArtifactId());
-        new MavenExecutor(config.getDestDir(), purgeProps, "dependency:purge-local-repository").execute();
+        purgeProps.put("manualInclude",
+                config.getArchetype().getGroupId() + ":" + config.getArchetype().getArtifactId());
+        new MavenExecutor(baseDir, purgeProps, "dependency:purge-local-repository").execute();
 
         // Compare source with test archetype
         final StringBuilder log = new StringBuilder();
         final Property artifactProperty = config.getArchetype().findProperty("artifactId");
         final File targetDir = new File(tmpDir, artifactProperty.getTestValue());
-        new DirectoryCompare(config).compare(config.getSrcDir().toPath(), targetDir.toPath(), log);
+        new DirectoryCompare(config).compare(config.getSrcDir(baseDir).toPath(), targetDir.toPath(), log);
         if (log.length() != 0) {
             throw new IllegalStateException("Differences found:\n" + log);
         }
@@ -150,6 +154,7 @@ public final class MavenArchetyper {
             }
         }
         tmpDir.mkdir();
+        LOG.info("Archetype test project directory: {}", tmpDir);
         return tmpDir;
     }
 
@@ -190,13 +195,15 @@ public final class MavenArchetyper {
         return ve;
     }
 
-    private static Files copyFiles(final Config config, final List<Mapping> mappings, final File archetypeResources) {
+    private static Files copyFiles(final File baseDir, final Config config, final List<Mapping> mappings,
+                                   final File archetypeResources) {
 
-        final PathMapper pathMapper = new PathMapper(config.getSrcDir(), archetypeResources, config.getPathMappings());
+        final PathMapper pathMapper = new PathMapper(config.getSrcDir(baseDir), archetypeResources,
+                config.getPathMappings());
 
         final Files files = new Files();
 
-        allFiles(config.getSrcDir()).stream().filter((file) -> {
+        allFiles(config.getSrcDir(baseDir)).stream().filter((file) -> {
             if (config.includes(file)) {
                 return true;
             }

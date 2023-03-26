@@ -64,9 +64,10 @@ public final class MavenArchetyperApp {
         final Logger log = LoggerFactory.getLogger(MavenArchetyperApp.class);
 
         // Load configuration
+        final File configFile = new File(args[0]).getAbsoluteFile();
         ConfigImpl config = null;
         try {
-            config = ConfigImpl.load(new File(args[0]));
+            config = ConfigImpl.load(configFile);
         } catch (final RuntimeException ex) {
             System.err.println("Error loading configuration XML");
             ex.printStackTrace(System.err);
@@ -75,7 +76,7 @@ public final class MavenArchetyperApp {
 
         // Start conversion
         try {
-            new MavenArchetyper(config).execute();
+            new MavenArchetyper(config).execute(configFile.getParentFile());
         } catch (final RuntimeException ex) {
             log.error("Error executing application", ex);
             System.exit(4);

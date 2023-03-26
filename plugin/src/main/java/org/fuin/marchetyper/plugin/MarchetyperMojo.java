@@ -56,7 +56,7 @@ public final class MarchetyperMojo extends AbstractMojo {
         LOG.info("Using config file: {}", configFile);
 
         final Config config = ConfigImpl.load(configFile);
-        new MavenArchetyper(config).execute();
+        new MavenArchetyper(config).execute(configFile.getParentFile());
 
     }
 
