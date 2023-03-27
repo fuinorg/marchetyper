@@ -28,7 +28,6 @@ import org.apache.maven.shared.verifier.Verifier;
 import org.fuin.marchetyper.core.Config;
 import org.fuin.marchetyper.core.ConfigImpl;
 import org.fuin.marchetyper.core.DirectoryCompare;
-import org.fuin.marchetyper.core.Property;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -59,7 +58,7 @@ public class MarchetyperMojoTest {
         // 1) Build "example" module
         // 2) Generate "archetype" module (by running "marchetyper")
         // 3) Install "archetype" into local repo
-        generateVerifier.addCliArguments("clean", "install", "-o");
+        generateVerifier.addCliArguments("clean", "install");
 
         // TEST
         generateVerifier.execute();
@@ -96,20 +95,18 @@ public class MarchetyperMojoTest {
         final File configFile = new File("src/test/resources/test-project/marchetyper/marchetyper-config.xml");
         final Config config = ConfigImpl.load(configFile);
         final File srcDir = new File("src/test/resources/test-project/example");
-        final File tmpDir = mkdir(new File("target/" + this.getClass().getSimpleName()));
+        final File tmpDir = new File("target/" + this.getClass().getSimpleName());
+        if (tmpDir.exists()) {
+            FileUtils.deleteDirectory(tmpDir);
+        }
+        tmpDir.mkdirs();
 
         final Verifier generateVerifier = new Verifier(tmpDir.getAbsolutePath());
         generateVerifier.setAutoclean(false);
+
         final List<String> args = new ArrayList<>();
         args.add("archetype:generate");
-        args.add("-o");
-        args.add("-DarchetypeGroupId=" + config.getArchetype().getGroupId());
-        args.add("-DarchetypeArtifactId=" + config.getArchetype().getArtifactId());
-        args.add("-DarchetypeVersion=" + config.getArchetype().getVersion());
-        for (final Property property : config.getArchetype().getProperties()) {
-            args.add("-D" + property.getName() + "=" + property.getTestValue());
-        }
-        args.add("-DinteractiveMode=false");
+        args.addAll(config.getArchetype().toArchetypeGenerateArgs());
         generateVerifier.addCliArguments(args.toArray(new String[args.size()]));
 
         // TEST
@@ -117,24 +114,8 @@ public class MarchetyperMojoTest {
 
         // VERIFY
         generateVerifier.verifyErrorFreeLog();
+        new DirectoryCompare(config).verify(srcDir, tmpDir);
 
-        // Compare source with test archetype
-        final StringBuilder log = new StringBuilder();
-        final Property artifactProperty = config.getArchetype().findProperty("artifactId");
-        final File targetDir = new File(tmpDir, artifactProperty.getTestValue());
-        new DirectoryCompare(config).compare(srcDir.toPath(), targetDir.toPath(), log);
-        if (log.length() != 0) {
-            throw new IllegalStateException("Differences found:\n" + log);
-        }
-
-    }
-
-    private File mkdir(final File tmpDir) throws IOException {
-        if (tmpDir.exists()) {
-            FileUtils.deleteDirectory(tmpDir);
-        }
-        tmpDir.mkdirs();
-        return tmpDir;
     }
 
 }

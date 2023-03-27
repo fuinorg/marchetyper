@@ -142,6 +142,25 @@ public final class DirectoryCompare {
 
     }
 
+    /**
+     * Compares the source directory with the generated artifact directory and fails if they are not equal with an
+     * {@link IllegalStateException}.
+     * 
+     * @param srcDir
+     *            Directory with the source example application.
+     * @param tmpDir
+     *            Temporary directory that contains another directory with the name of the generated archetype's artifact test value.
+     */
+    public void verify(final File srcDir, final File tmpDir) {
+        final StringBuilder log = new StringBuilder();
+        final Property artifactProperty = config.getArchetype().findProperty("artifactId");
+        final File targetDir = new File(tmpDir, artifactProperty.getTestValue());
+        compare(srcDir.toPath(), targetDir.toPath(), log);
+        if (log.length() != 0) {
+            throw new IllegalStateException("Differences found:\n" + log);
+        }
+    }
+
     private boolean include(final Path filePath) {
         final File file = filePath.toFile();
         if (config.includes(file)) {

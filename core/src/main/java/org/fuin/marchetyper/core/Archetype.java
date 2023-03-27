@@ -17,6 +17,7 @@
  */
 package org.fuin.marchetyper.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -142,6 +143,25 @@ public final class Archetype {
             }
         }
         return null;
+    }
+
+    /**
+     * Creates an argument list for generating an archetype using the configuration test data.
+     * 
+     * @return List of arguments for the 'archetype:generate' Maven command.
+     */
+    public final List<String> toArchetypeGenerateArgs() {
+        final List<String> args = new ArrayList<>();
+        args.add("-DarchetypeGroupId=" + groupId);
+        args.add("-DarchetypeArtifactId=" + artifactId);
+        args.add("-DarchetypeVersion=" + version);
+        if (properties != null) {
+            for (final Property property : properties) {
+                args.add("-D" + property.getName() + "=" + property.getTestValue());
+            }
+            args.add("-DinteractiveMode=false");
+        }
+        return args;
     }
 
 }

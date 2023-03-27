@@ -131,11 +131,13 @@ public final class ConfigImpl implements Config {
     public final boolean isTest() {
         return test;
     }
-    
+
+    @Override
     public final Archetype getArchetype() {
         return archetype;
     }
 
+    @Override
     public final List<Variable> getVariables() {
         if (variables == null) {
             return Collections.emptyList();
@@ -143,6 +145,7 @@ public final class ConfigImpl implements Config {
         return Collections.unmodifiableList(variables);
     }
 
+    @Override
     public final List<Mapping> getPathMappings() {
         if (pathMappings == null) {
             return Collections.emptyList();
@@ -150,6 +153,7 @@ public final class ConfigImpl implements Config {
         return Collections.unmodifiableList(pathMappings);
     }
 
+    @Override
     public final List<Mapping> getFileMappings() {
         if (fileMappings == null) {
             return Collections.emptyList();
@@ -157,6 +161,7 @@ public final class ConfigImpl implements Config {
         return Collections.unmodifiableList(fileMappings);
     }
 
+    @Override
     public final List<FileFilter> getFileIncludes() {
         if (fileIncludes == null) {
             return Collections.emptyList();
@@ -164,6 +169,7 @@ public final class ConfigImpl implements Config {
         return Collections.unmodifiableList(fileIncludes);
     }
 
+    @Override
     public final List<FileFilter> getFileExcludes() {
         if (fileExcludes == null) {
             return Collections.emptyList();
@@ -171,14 +177,17 @@ public final class ConfigImpl implements Config {
         return Collections.unmodifiableList(fileExcludes);
     }
 
+    @Override
     public final String getBinaryFiles() {
         return binaryFiles;
     }
 
+    @Override
     public final String getTextFiles() {
         return textFiles;
     }
 
+    @Override
     public final boolean includes(final File file) {
         if (fileIncludes == null) {
             return false;
@@ -192,6 +201,7 @@ public final class ConfigImpl implements Config {
         return false;
     }
 
+    @Override
     public final boolean excludes(final File file) {
         if (fileExcludes == null) {
             return false;
@@ -205,14 +215,16 @@ public final class ConfigImpl implements Config {
         return false;
     }
 
-    public boolean isBinary(final File srcFile) {
+    @Override
+    public final boolean isBinary(final File srcFile) {
         if (binaryFiles == null) {
             binaryFiles = ".*\\.(jar)";
         }
         return srcFile.getName().matches(binaryFiles);
     }
 
-    public boolean isText(final File srcFile) {
+    @Override
+    public final boolean isText(final File srcFile) {
         if (textFiles == null) {
             binaryFiles = ".*\\.(properties|md|java|xml)";
         }
