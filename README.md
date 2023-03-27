@@ -5,7 +5,7 @@ Makes Maven Archetype creation a breeze
 [![Coverage Status](https://sonarcloud.io/api/project_badges/measure?project=org.fuin%3Amarchetyper&metric=coverage)](https://sonarcloud.io/dashboard?id=org.fuin%3Amarchetyper)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.fuin/marchetyper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.fuin/marchetyper/)
 [![LGPLv3 License](http://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl.html)
-[![Java Development Kit 17](https://img.shields.io/badge/JDK-17-green.svg)](https://openjdk.java.net/projects/jdk/17/)
+[![Java Development Kit 11](https://img.shields.io/badge/JDK-11-green.svg)](https://openjdk.java.net/projects/jdk/11/)
 
 ## Why?
 Creating a Maven Archetype from a project is already possible using the [create-from-project](https://maven.apache.org/archetype/maven-archetype-plugin/create-from-project-mojo.html) Mojo. Unfortunately it's pretty limited and does not allow much individual customization. That's where the **marchetyper** kicks in. It has a specialized configuration file and allows repeating the creation process every time your existing example project has changed.
