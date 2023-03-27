@@ -29,6 +29,7 @@
     </issueManagement>
 
     <modules>
+        <module>app</module>
         <module>core</module>
         <module>plugin</module>
         <module>test</module>

@@ -81,7 +81,6 @@ public final class MavenArchetyper {
      *            Base directory.
      */
     public void generate(File baseDir) {
-
         LOG.info("baseDir: {}", baseDir);
         final File destDir = config.getDestDir(baseDir);
         try {
@@ -93,8 +92,21 @@ public final class MavenArchetyper {
         } catch (final IOException ex) {
             throw new RuntimeException("Error deleting destination directory " + destDir, ex);
         }
-        LOG.info("destDir: {}", destDir);
         final File srcDir = config.getSrcDir(baseDir);
+        generate(srcDir, destDir);
+    }
+
+    /**
+     * Generated the archetype with the given base directory.
+     *
+     * @param srcDir
+     *            Source directory.
+     * @param destDir
+     *            Destination directory.
+     */
+    public void generate(final File srcDir, final File destDir) {
+
+        LOG.info("destDir: {}", destDir);
         LOG.info("srcDir: {}", srcDir);
 
         final File destSrc = new File(destDir, "src");
