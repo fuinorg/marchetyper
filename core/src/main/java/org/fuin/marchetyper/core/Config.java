@@ -44,12 +44,13 @@ public interface Config {
     public File getDestDir(File baseDir);
 
     /**
-     * Defines the newly created archetype should be executed with defined test values. The result will then be compared with the original
-     * source project.
+     * Returns the location of a custom 'pom.xml' to use for the archetype.
      * 
-     * @return TRUE for starting a test.
+     * @param baseDir
+     *            Base directory used in case the 'customPomFile' is not absolute.
+     * @return The 'pom.xml' file to use for the archetype or {@literal null} in case no custom POM is configured.
      */
-    public boolean isTest();
+    public File getCustomPomFile(File baseDir);
 
     /**
      * Returns the archetype definition.

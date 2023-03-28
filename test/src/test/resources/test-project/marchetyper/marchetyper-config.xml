@@ -2,8 +2,8 @@
     src-dir="../example"
     dest-dir="../archetype"
     binary-files=".*\.(jar|gitignore)"
-    text-files="(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile"
-    test="true">
+    text-files="(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile">
+    <!-- custom-pom-file="custom-pom.xml" -->    
 
     <variables>
         <variable name="pkgPath" source="pkgName" transform="DOT_2_SLASH" />

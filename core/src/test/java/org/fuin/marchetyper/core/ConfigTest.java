@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 
-import org.fuin.utils4j.Utils4J;
 import org.junit.jupiter.api.Test;
 
 /**

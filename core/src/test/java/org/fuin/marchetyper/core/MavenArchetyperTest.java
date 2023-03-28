@@ -43,7 +43,9 @@ public class MavenArchetyperTest {
         new MavenArchetyper(config).generate(targetTestProject);
 
         // VERIFY
-        assertThat(true).isTrue();
+        final File pomXmlFile = new File(targetTestProject, "archetype/pom.xml");
+        final File customPomFile = new File(targetTestProject, "marchetyper/custom-pom.xml");
+        assertThat(pomXmlFile).hasSameTextualContentAs(customPomFile);
 
     }
 

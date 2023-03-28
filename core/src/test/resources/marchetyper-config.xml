@@ -3,7 +3,7 @@
     dest-dir="archetype"
     binary-files=".*\.(jar|gitignore)"
     text-files="(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile"
-    test="false">
+    custom-pom-file="marchetyper/custom-pom.xml">
 
     <variables>
         <variable name="pkgPath" source="pkgName" transform="DOT_2_SLASH" />

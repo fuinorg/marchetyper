@@ -17,12 +17,12 @@
  */
 package org.fuin.marchetyper.app;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.fuin.marchetyper.core.Config;
 import org.fuin.marchetyper.core.ConfigImpl;
 import org.fuin.marchetyper.core.MavenArchetyper;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Generates an archetype based on an example.
@@ -31,7 +31,9 @@ public class GeneratorApp {
 
     /**
      * Main entry point.
-     * @param args Path and name of the config file (marchetyper-config.xml) as only argument expected.
+     * 
+     * @param args
+     *            Path and name of the config file (marchetyper-config.xml) as only argument expected.
      */
     public static void main(String[] args) throws IOException {
 
@@ -48,8 +50,9 @@ public class GeneratorApp {
         final Config config = ConfigImpl.load(configFile);
         final File targetDir = new File("target/example-archetype").getCanonicalFile();
         final File srcDir = config.getSrcDir(configFile.getParentFile());
+        final File customPomFile = config.getCustomPomFile(configFile.getParentFile());
 
-        new MavenArchetyper(config).generate(srcDir, targetDir);
+        new MavenArchetyper(config).generate(customPomFile, srcDir, targetDir);
 
     }
 

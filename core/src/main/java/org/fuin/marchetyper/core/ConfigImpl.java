@@ -62,8 +62,8 @@ public final class ConfigImpl implements Config {
     @XmlAttribute(name = "text-files")
     private String textFiles;
 
-    @XmlAttribute(name = "test")
-    private boolean test;
+    @XmlAttribute(name = "custom-pom-file")
+    private String customPomFile;
 
     @XmlElement(name = "archetype")
     private Archetype archetype;
@@ -128,8 +128,15 @@ public final class ConfigImpl implements Config {
     }
 
     @Override
-    public final boolean isTest() {
-        return test;
+    public final File getCustomPomFile(final File baseDir) {
+        if (customPomFile == null) {
+            return null;
+        }
+        final File file = new File(customPomFile);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        return canonical(new File(baseDir, customPomFile));
     }
 
     @Override

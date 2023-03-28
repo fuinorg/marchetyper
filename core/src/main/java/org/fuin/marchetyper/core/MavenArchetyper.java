@@ -93,21 +93,27 @@ public final class MavenArchetyper {
             throw new RuntimeException("Error deleting destination directory " + destDir, ex);
         }
         final File srcDir = config.getSrcDir(baseDir);
-        generate(srcDir, destDir);
+        final File customPomFile = config.getCustomPomFile(baseDir);
+        generate(customPomFile, srcDir, destDir);
     }
 
     /**
      * Generated the archetype with the given base directory.
      *
+     * @param customPomFile
+     *            Custom POM file or {@literal null} if no custom pom is available.
      * @param srcDir
      *            Source directory.
      * @param destDir
      *            Destination directory.
      */
-    public void generate(final File srcDir, final File destDir) {
+    public void generate(File customPomFile, final File srcDir, final File destDir) {
 
+        LOG.info("customPomFile: {}", customPomFile);
         LOG.info("destDir: {}", destDir);
         LOG.info("srcDir: {}", srcDir);
+
+        copyOrCreatePom(customPomFile, destDir);
 
         final File destSrc = new File(destDir, "src");
         final File destSrcMain = new File(destSrc, "main");
@@ -118,20 +124,42 @@ public final class MavenArchetyper {
 
         final Files destFiles = copyFiles(srcDir, destDir, config, mappings, archetypeResources);
         createArchetypeMetadata(destDir, metaInfMaven, config, archetypeResources, destFiles);
+
+    }
+
+    private void copyOrCreatePom(final File customPomFile, final File destDir) {
+
+        if (customPomFile == null) {
+
+            final VelocityEngine ve = createVelocityEngine();
+            final VelocityContext context = new VelocityContext();
+            context.put("archetype", config.getArchetype());
+
+            merge(ve, context, "pom.xml", new File(destDir, "pom.xml"));
+
+        } else {
+
+            final File destPomFile = new File(destDir, "pom.xml");
+            try {
+                FileUtils.copyFile(customPomFile, destPomFile);
+            } catch (final IOException ex) {
+                throw new RuntimeException("Error copying custom POM from '" + customPomFile + "' to: " + destPomFile, ex);
+            }
+
+        }
+
     }
 
     private void createArchetypeMetadata(final File destDir, final File metaInfMavenDir, final Config config, final File resourcesDir,
             final Files files) {
 
         final VelocityEngine ve = createVelocityEngine();
-
         final VelocityContext context = new VelocityContext();
         context.put("archetype", config.getArchetype());
         context.put("textFiles", wrap(files.textFiles));
         context.put("binaryFiles", wrap(files.binaryFiles));
 
         merge(ve, context, "archetype-metadata.xml", new File(metaInfMavenDir, "archetype-metadata.xml"));
-        merge(ve, context, "pom.xml", new File(destDir, "pom.xml"));
 
     }
 
