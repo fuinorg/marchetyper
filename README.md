@@ -2,7 +2,7 @@
 Makes Maven Archetype creation a breeze
 
 [![Java Maven Build](https://github.com/fuinorg/marchetyper/actions/workflows/maven.yml/badge.svg)](https://github.com/fuinorg/marchetyper/actions/workflows/maven.yml)
-[![Coverage Status](https://sonarcloud.io/api/project_badges/measure?project=org.fuin%3Amarchetyper&metric=coverage)](https://sonarcloud.io/dashboard?id=org.fuin%3Amarchetyper)
+
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.fuin/marchetyper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.fuin/marchetyper/)
 [![LGPLv3 License](http://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl.html)
 [![Java Development Kit 11](https://img.shields.io/badge/JDK-11-green.svg)](https://openjdk.java.net/projects/jdk/11/)
@@ -17,7 +17,7 @@ The plugin uses a config file named 'marchetyper-config.xml' in the same directo
 <plugin>
     <groupId>org.fuin.marchetyper</groupId>
     <artifactId>marchetyper-maven-plugin</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.3.0</version>
     <executions>
         <execution>
             <id>generate</id>
