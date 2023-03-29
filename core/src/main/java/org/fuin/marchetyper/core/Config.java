@@ -53,32 +53,106 @@ public interface Config {
     public File getCustomPomFile(File baseDir);
 
     /**
+     * Returns the location of a post generate Groovy script to use for the archetype.
+     *
+     * @param baseDir
+     *            Base directory used in case the 'postGenerateFile' is not absolute.
+     * @return The Groovy file to use for the archetype or {@literal null} in case no script file is configured.
+     */
+    public File getPostGenerateFile(File baseDir);
+
+    public boolean isMaskDotFile();
+
+    /**
      * Returns the archetype definition.
      * 
      * @return Archetype.
      */
     public Archetype getArchetype();
 
+    /**
+     * Returns the list of variables.
+     *
+     * @return Defined variables.
+     */
     public List<Variable> getVariables();
 
+    /**
+     * Returns the list of path mappings.
+     *
+     * @return Defined mappings.
+     */
     public List<Mapping> getPathMappings();
 
+    /**
+     * Returns the list of file mappings.
+     *
+     * @return Defined mappings.
+     */
     public List<Mapping> getFileMappings();
 
+    /**
+     * Returns the list of includes.
+     *
+     * @return Defined file includes.
+     */
     public List<FileFilter> getFileIncludes();
 
+    /**
+     * Returns the list of excludes.
+     *
+     * @return Defined file excludes.
+     */
     public List<FileFilter> getFileExcludes();
 
+    /**
+     * Returns a regular expression to determine if a file is considered 'binary'.
+     *
+     * @return Regular expression.
+     */
     public String getBinaryFiles();
 
+    /**
+     * Returns a regular expression to determine if a file is considered 'text'.
+     *
+     * @return Regular expression.
+     */
     public String getTextFiles();
 
+    /**
+     * Determines if a file should be included.
+     *
+     * @param file File to test.
+     *
+     * @return {@literal true} if the file should be included base on the inclusion pattern.
+     */
     public boolean includes(File file);
 
+    /**
+     * Determines if a file should be excluded.
+     *
+     * @param file File to test.
+     *
+     * @return {@literal true} if the file should be excluded base on the exclusion pattern.
+     */
     public boolean excludes(File file);
 
-    public boolean isBinary(File srcFile);
+    /**
+     * Determines if a file is considered binary.
+     *
+     * @param file File to test.
+     *
+     * @return {@literal true} if the file is interpreted as binary.
+     */
+    public boolean isBinary(File file);
 
-    public boolean isText(File srcFile);
+    /**
+     * Determines if a file is considered text.
+     *
+     * @param file File to test.
+     *
+     * @return {@literal true} if the file is interpreted as text.
+     */
+    public boolean isText(File file);
 
 }

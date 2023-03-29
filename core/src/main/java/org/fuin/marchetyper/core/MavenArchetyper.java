@@ -94,7 +94,8 @@ public final class MavenArchetyper {
         }
         final File srcDir = config.getSrcDir(baseDir);
         final File customPomFile = config.getCustomPomFile(baseDir);
-        generate(customPomFile, srcDir, destDir);
+        final File postGenerateFile = config.getPostGenerateFile(baseDir);
+        generate(customPomFile, postGenerateFile, srcDir, destDir);
     }
 
     /**
@@ -102,14 +103,17 @@ public final class MavenArchetyper {
      *
      * @param customPomFile
      *            Custom POM file or {@literal null} if no custom pom is available.
+     * @param postGenerateFile
+     *            Post generate Groovy file or {@literal null} if no post generation file is configured.
      * @param srcDir
      *            Source directory.
      * @param destDir
      *            Destination directory.
      */
-    public void generate(File customPomFile, final File srcDir, final File destDir) {
+    public void generate(File customPomFile, final File postGenerateFile, final File srcDir, final File destDir) {
 
         LOG.info("customPomFile: {}", customPomFile);
+        LOG.info("postGenerateFile: {}", postGenerateFile);
         LOG.info("destDir: {}", destDir);
         LOG.info("srcDir: {}", srcDir);
 
@@ -121,10 +125,22 @@ public final class MavenArchetyper {
         final File archetypeResources = new File(destSrcMainResources, "archetype-resources");
         final File metaInf = new File(destSrcMainResources, "META-INF");
         final File metaInfMaven = new File(metaInf, "maven");
+        final File archetypePostGenerateGroovy = new File(metaInf, "archetype-post-generate.groovy");
 
+        copyPostGenerateFile(postGenerateFile, archetypePostGenerateGroovy);
         final Files destFiles = copyFiles(srcDir, destDir, config, mappings, archetypeResources);
         createArchetypeMetadata(destDir, metaInfMaven, config, archetypeResources, destFiles);
 
+    }
+
+    private void copyPostGenerateFile(File srcFile, File destFile) {
+        if (srcFile != null) {
+            try {
+                FileUtils.copyFile(srcFile, destFile);
+            } catch (final IOException ex) {
+                throw new RuntimeException("Failed to copy '" + srcFile + "' to '" + destFile + "'", ex);
+            }
+        }
     }
 
     private void copyOrCreatePom(final File customPomFile, final File destDir) {
@@ -204,11 +220,12 @@ public final class MavenArchetyper {
                 destFile.getParentFile().mkdirs();
             }
             if (config.isBinary(srcFile)) {
-                copyBinaryFile(srcDir, srcFile, destDir, destFile);
-                addDestFile(files.binaryFiles, archetypeResources, destFile);
+                final File targetFile = copyBinaryFile(config, srcDir, srcFile, destDir, destFile);
+                addDestFile(files.binaryFiles, archetypeResources, targetFile);
             } else if (config.isText(srcFile)) {
-                copyTextFile(srcDir, srcFile, destDir, destFile, config.getTextFiles(), config.getVariables(), mappings);
-                addDestFile(files.textFiles, archetypeResources, destFile);
+                final File targetFile = copyTextFile(config, srcDir, srcFile, destDir, destFile,
+                        config.getTextFiles(), config.getVariables(), mappings);
+                addDestFile(files.textFiles, archetypeResources, targetFile);
             } else {
                 throw new IllegalStateException("File found that is neither binary nor text file: " + srcFile);
             }
@@ -225,34 +242,46 @@ public final class MavenArchetyper {
         files.add(relativeFile);
     }
 
-    private static void copyBinaryFile(final File srcDir, final File srcFile, final File destDir, final File destFile) {
+    private static File maskDotFile(final Config config, final File destDir, final File destFile) {
+        if (config.isMaskDotFile() && destFile.getName().startsWith(".")) {
+            LOG.info("Applying ARCHETYPE-505 workaround to: {}", Utils4J.getRelativePath(destDir, destFile));
+            return new File(destFile.getParentFile(), "_" + destFile.getName());
+        }
+        return destFile;
+    }
+
+    private static File copyBinaryFile(final Config config, final File srcDir, final File srcFile, final File destDir, final File destFileX) {
+        final File destFile = maskDotFile(config, destDir, destFileX);
         LOG.info("Copy binary {} to {}", Utils4J.getRelativePath(srcDir, srcFile), Utils4J.getRelativePath(destDir, destFile));
         try {
             FileUtils.copyFile(srcFile, destFile);
+            return destFile;
         } catch (final IOException ex) {
             throw new RuntimeException("Error copying binary file from " + srcFile + " to " + destFile, ex);
         }
     }
 
-    private static void copyTextFile(final File srcDir, final File srcFile, final File destDir, final File destFile, final String textFiles,
-            final List<Variable> variables, final List<Mapping> mappings) {
+    private static File copyTextFile(final Config config, final File srcDir, final File srcFile, final File destDir, final File destFileX,
+                                     final String textFiles, final List<Variable> variables, final List<Mapping> mappings) {
+        final File destFile = maskDotFile(config, destDir, destFileX);
         LOG.info("Copy text {} to {}", Utils4J.getRelativePath(srcDir, srcFile), Utils4J.getRelativePath(destDir, destFile));
         try (final ReplacingFileReader reader = new ReplacingFileReader(srcFile, 1024, textFiles, mappings)) {
             try (final Writer writer = new BufferedWriter(
                     new OutputStreamWriter(new FileOutputStream(destFile), Charset.forName("utf-8")))) {
                 // Add prefix
-                writer.write("#set( $symbol_pound = '#' )\n");
-                writer.write("#set( $symbol_dollar = '$' )\n");
-                writer.write("#set( $symbol_escape = '\\' )\n");
+                writer.write("#set( $symbol_pound = '#' )" + System.lineSeparator());
+                writer.write("#set( $symbol_dollar = '$' )" + System.lineSeparator());
+                writer.write("#set( $symbol_escape = '\\' )" + System.lineSeparator());
 
-                writer.write("#set( $delim = '.,_-/' )\n");
-                writer.write("#set( $empty = '' )\n");
-                writer.write("#set( $StringUtils = $empty.class.forName('org.codehaus.plexus.util.StringUtils') )\n");
+                writer.write("#set( $delim = '.,_-/' )" + System.lineSeparator());
+                writer.write("#set( $empty = '' )" + System.lineSeparator());
+                writer.write("#set( $StringUtils = $empty.class.forName('org.codehaus.plexus.util.StringUtils') )" + System.lineSeparator());
                 for (Variable v : variables) {
-                    writer.write("#set( $" + v.getName() + " = " + v.getTransformation().getCode(v.getSource()) + " )\n");
+                    writer.write("#set( $" + v.getName() + " = " + v.getTransformation().getCode(v.getSource()) + " )" + System.lineSeparator());
                 }
                 // Replace rest
                 IOUtils.copy(reader, writer);
+                return destFile;
             }
         } catch (final IOException ex) {
             throw new RuntimeException("Error copying text file from " + srcFile + " to " + destFile, ex);

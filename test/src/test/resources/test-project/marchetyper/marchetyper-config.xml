@@ -2,7 +2,10 @@
     src-dir="../example"
     dest-dir="../archetype"
     binary-files=".*\.(jar|gitignore)"
-    text-files="(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile">
+    text-files="(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile"
+    post-generate-file="archetype-post-generate.groovy"
+    mask-dot-file="true"
+    >
     <!-- custom-pom-file="custom-pom.xml" -->    
 
     <variables>
@@ -42,7 +45,7 @@
 
     <!-- Directories and files that will always be copied (also if part of 'file-excludes') -->
     <file-includes>
-        <filter file=".gitignore" />
+        <filter file=".*\.gitignore" />
         <filter path=".*/\.mvn/.*" />
     </file-includes>
 

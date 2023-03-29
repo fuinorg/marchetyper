@@ -65,6 +65,12 @@ public final class ConfigImpl implements Config {
     @XmlAttribute(name = "custom-pom-file")
     private String customPomFile;
 
+    @XmlAttribute(name = "post-generate-file")
+    private String postGenerateFile;
+
+    @XmlAttribute(name = "mask-dot-file")
+    private Boolean maskDotFile;
+
     @XmlElement(name = "archetype")
     private Archetype archetype;
 
@@ -137,6 +143,26 @@ public final class ConfigImpl implements Config {
             return file;
         }
         return canonical(new File(baseDir, customPomFile));
+    }
+
+    @Override
+    public final File getPostGenerateFile(final File baseDir) {
+        if (postGenerateFile == null) {
+            return null;
+        }
+        final File file = new File(postGenerateFile);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        return canonical(new File(baseDir, postGenerateFile));
+    }
+
+    @Override
+    public boolean isMaskDotFile() {
+        if (maskDotFile == null) {
+            return false;
+        }
+        return maskDotFile;
     }
 
     @Override

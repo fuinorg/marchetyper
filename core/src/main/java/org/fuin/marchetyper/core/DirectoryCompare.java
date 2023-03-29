@@ -17,6 +17,10 @@
  */
 package org.fuin.marchetyper.core;
 
+import org.apache.commons.io.FileUtils;
+import org.fuin.objects4j.common.ConstraintViolationException;
+import org.fuin.objects4j.common.Contract;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -26,10 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-
-import org.apache.commons.io.FileUtils;
-import org.fuin.objects4j.common.ConstraintViolationException;
-import org.fuin.objects4j.common.Contract;
 
 /**
  * Compares two directories.
@@ -119,18 +119,18 @@ public final class DirectoryCompare {
                         if (Files.exists(destFile)) {
                             if (Files.size(srcFile) == Files.size(destFile)) {
                                 if (!FileUtils.contentEquals(srcFile.toFile(), destFile.toFile())) {
-                                    log.append("CONTENT DIFF: Source File=" + srcFile + ", Dest File=" + destFile + "\n");
+                                    log.append("CONTENT DIFF: Source File=" + srcFile + ", Dest File=" + destFile + System.lineSeparator());
                                 }
                             } else {
                                 log.append("SIZE DIFF: Source=" + Files.size(srcFile) + ", Dest=" + Files.size(destFile) + " [Source File="
-                                        + srcFile + ", Dest File=" + destFile + "]\n");
+                                        + srcFile + ", Dest File=" + destFile + "]" + System.lineSeparator());
                             }
                         } else {
-                            log.append("DEST FILE NOT FOUND: Source File=" + srcFile + ", Dest File=" + destFile + "\n");
+                            log.append("DEST FILE NOT FOUND: Source File=" + srcFile + ", Dest File=" + destFile + System.lineSeparator());
                         }
                         return FileVisitResult.CONTINUE;
                     } catch (final RuntimeException ex) {
-                        log.append("ERROR PROCESSING SRC FILE: " + srcFile + "\n");
+                        log.append("ERROR PROCESSING SRC FILE: " + srcFile + System.lineSeparator());
                         return FileVisitResult.CONTINUE;
                     }
                 }
@@ -157,7 +157,7 @@ public final class DirectoryCompare {
         final File targetDir = new File(tmpDir, artifactProperty.getTestValue());
         compare(srcDir.toPath(), targetDir.toPath(), log);
         if (log.length() != 0) {
-            throw new IllegalStateException("Differences found:\n" + log);
+            throw new IllegalStateException("Differences found:" + System.lineSeparator() + log);
         }
     }
 

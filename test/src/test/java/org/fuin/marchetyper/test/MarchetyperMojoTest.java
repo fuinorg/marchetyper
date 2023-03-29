@@ -28,6 +28,7 @@ import org.apache.maven.shared.verifier.Verifier;
 import org.fuin.marchetyper.core.Config;
 import org.fuin.marchetyper.core.ConfigImpl;
 import org.fuin.marchetyper.core.DirectoryCompare;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -74,6 +75,8 @@ public class MarchetyperMojoTest {
         generateVerifier.verifyErrorFreeLog();
 
         generateVerifier.verifyTextInLog("Using config file:");
+        generateVerifier
+                .verifyTextInLog("Applying ARCHETYPE-505 workaround to: src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + ".gitignore");
         generateVerifier
                 .verifyTextInLog("Copy text pom.xml to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "pom.xml");
         generateVerifier.verifyTextInLog("Copy text src" + FS + "test" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS

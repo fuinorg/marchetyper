@@ -51,8 +51,9 @@ public class GeneratorApp {
         final File targetDir = new File("target/example-archetype").getCanonicalFile();
         final File srcDir = config.getSrcDir(configFile.getParentFile());
         final File customPomFile = config.getCustomPomFile(configFile.getParentFile());
+        final File postGenerateFile = config.getPostGenerateFile(configFile.getParentFile());
 
-        new MavenArchetyper(config).generate(customPomFile, srcDir, targetDir);
+        new MavenArchetyper(config).generate(customPomFile, postGenerateFile, srcDir, targetDir);
 
     }
 
