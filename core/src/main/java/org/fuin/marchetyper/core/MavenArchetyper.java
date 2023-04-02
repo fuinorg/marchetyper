@@ -230,18 +230,37 @@ public final class MavenArchetyper {
         return files.stream().map(file -> new VelocityFileWrapper(file)).collect(Collectors.toList());
     }
 
+    /**
+     * Wraps a file to allow easier usage in Velocity templates.
+     */
     public static final class VelocityFileWrapper {
 
         private final File file;
 
+        /**
+         * Constructor with mandatory data.
+         * 
+         * @param file
+         *            File to wrap.
+         */
         public VelocityFileWrapper(File file) {
             this.file = file;
         }
 
+        /**
+         * Returns the filename.
+         * 
+         * @return Filename.
+         */
         public String getName() {
             return file.getName();
         }
 
+        /**
+         * Returns the parent path.
+         * 
+         * @return Parent path.
+         */
         public String getParent() {
             if (file.getParent() == null) {
                 return "";

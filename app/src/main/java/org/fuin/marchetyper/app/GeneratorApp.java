@@ -34,6 +34,8 @@ public class GeneratorApp {
      * 
      * @param args
      *            Path and name of the config file (marchetyper-config.xml) as only argument expected.
+     * @throws IOException
+     *             Error reading the config file or getting a canonical file.
      */
     public static void main(String[] args) throws IOException {
 

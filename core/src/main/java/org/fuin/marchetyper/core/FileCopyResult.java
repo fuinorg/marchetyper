@@ -51,6 +51,9 @@ public final class FileCopyResult {
     /**
      * Returns the list of binary files copied with a path relative to the given base directory.
      * 
+     * @param baseDir
+     *            Directory to use as base directory for creating the relative path.
+     * 
      * @return List of 1:1 copied files.
      */
     public List<File> getRelativizedBinaryFiles(final File baseDir) {
@@ -68,6 +71,9 @@ public final class FileCopyResult {
 
     /**
      * Returns the list of text files copied with a path relative to the given base directory.
+     * 
+     * @param baseDir
+     *            Directory to use as base directory for creating the relative path.
      * 
      * @return List of copied text files that also may have been modified.
      */
@@ -115,6 +121,11 @@ public final class FileCopyResult {
             return this;
         }
 
+        /**
+         * Creates a new instance of the outer class.
+         * 
+         * @return New instance.
+         */
         public FileCopyResult build() {
             final FileCopyResult tmp = delegate;
             delegate = new FileCopyResult();

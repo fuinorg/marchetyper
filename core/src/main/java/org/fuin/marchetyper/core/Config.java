@@ -61,6 +61,11 @@ public interface Config extends FileMatcher {
      */
     public File getPostGenerateFile(File baseDir);
 
+    /**
+     * Determines if a file start starts with a '.' should be renamed to '_.'.
+     * 
+     * @return If the file should be renamed {@literal true}.
+     */
     public boolean isMaskDotFile();
 
     /**

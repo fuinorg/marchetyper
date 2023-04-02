@@ -140,6 +140,9 @@ public final class FileCopy {
 
         private FileCopy delegate;
 
+        /**
+         * Default constructor.
+         */
         public Builder() {
             delegate = new FileCopy();
         }
@@ -216,7 +219,7 @@ public final class FileCopy {
          *            Regular expression that works on filenames. It will be used to determine if the replacement should be applied at all
          *            for the given type of file. May be <code>null</code> if all file types are OK. It's something like
          *            "(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile" to identify if it's a text file. It will ONLY be used in case
-         *            this mapping has neither a {@link #fileExpr} nor a {@link #pathExpr} defined (both are {@literal null}).
+         *            this mapping has neither a <b>fileExpr</b> nor a <b>pathExpr</b> defined (both are {@literal null}).
          * 
          * @return The Builder.
          */
