@@ -25,10 +25,10 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.shared.verifier.Verifier;
+import org.assertj.core.util.Arrays;
 import org.fuin.marchetyper.core.Config;
 import org.fuin.marchetyper.core.ConfigImpl;
 import org.fuin.marchetyper.core.DirectoryCompare;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -69,24 +69,28 @@ public class MarchetyperMojoTest {
         System.out.println(DIV + " PLUGIN OUTPUT BEGIN " + DIV);
         final List<String> lines = generateVerifier.loadFile(generateVerifier.getBasedir(), generateVerifier.getLogFileName(), false);
         for (final String line : lines) {
-            System.out.println(line);
+            System.out.println(Verifier.stripAnsi(line));
         }
         System.out.println(DIV + " PLUGIN OUTPUT END " + DIV);
         generateVerifier.verifyErrorFreeLog();
 
-        generateVerifier.verifyTextInLog("Using config file:");
-        generateVerifier
-                .verifyTextInLog("Applying ARCHETYPE-505 workaround to: src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + ".gitignore");
-        generateVerifier
-                .verifyTextInLog("Copy text pom.xml to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "pom.xml");
-        generateVerifier.verifyTextInLog("Copy text src" + FS + "test" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS
-                + "app" + FS + "ExampleAppTest.java to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS
-                + "test" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__Test.java");
-        generateVerifier.verifyTextInLog("Copy text src" + FS + "main" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS
-                + "app" + FS + "ExampleApp.java to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS
-                + "main" + FS + "java" + FS + "__pkgPath__" + FS + "__appName__.java");
-        generateVerifier.verifyTextInLog(
-                "Copy text README.md to src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "README.md");
+        assertContainsAllFragmentsInOneLine(lines, "Using config file:",
+                "test" + FS + "target" + FS + "test-classes" + FS + "test-project" + FS + "marchetyper" + FS + "marchetyper-config.xml");
+        assertContainsAllFragmentsInOneLine(lines, "Applying ARCHETYPE-505 workaround to:",
+                "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + ".gitignore");
+        assertContainsAllFragmentsInOneLine(lines, "Copy text", "pom.xml to",
+                "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "pom.xml");
+        assertContainsAllFragmentsInOneLine(lines, "Copy text",
+                "src" + FS + "test" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS + "app" + FS
+                        + "ExampleAppTest.java to ",
+                "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS + "test" + FS + "java" + FS
+                        + "__pkgPath__" + FS + "__appName__Test.java");
+        assertContainsAllFragmentsInOneLine(lines, "Copy text",
+                "src" + FS + "main" + FS + "java" + FS + "org" + FS + "fuin" + FS + "examples" + FS + "app" + FS + "ExampleApp.java to",
+                "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "src" + FS + "main" + FS + "java" + FS
+                        + "__pkgPath__" + FS + "__appName__.java");
+        assertContainsAllFragmentsInOneLine(lines, "Copy text", "README.md to",
+                "src" + FS + "main" + FS + "resources" + FS + "archetype-resources" + FS + "README.md");
 
     }
 
@@ -119,6 +123,24 @@ public class MarchetyperMojoTest {
         generateVerifier.verifyErrorFreeLog();
         new DirectoryCompare(config).verify(srcDir, tmpDir);
 
+    }
+
+    private static boolean assertContainsAllFragmentsInOneLine(List<String> lines, String... fragments) {
+        for (final String line : lines) {
+            if (containsAll(line, fragments)) {
+                return true;
+            }
+        }
+        throw new RuntimeException("Cannot find a line that contained all: " + Arrays.asList(fragments));
+    }
+
+    private static boolean containsAll(String line, String... fragments) {
+        for (final String fragment : fragments) {
+            if (!line.contains(fragment)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

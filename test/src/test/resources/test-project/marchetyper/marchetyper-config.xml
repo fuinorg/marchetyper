@@ -40,7 +40,7 @@
         <mapping search="org/fuin/examples/app" replace="${pkgPath}" file=".*\.md" />
         <mapping search="My cool application" replace="${description}" file=".*\.md" />
         <mapping search="example-app" replace="${artifactId}" file=".*\.md" />        
-        <mapping search="ExampleApp" replace="${appName}" file=".*\.md" />        
+        <mapping search="ExampleApp" replace="${appName}" file=".*\.(md|java)" />        
     </text-file-mappings>
 
     <!-- Directories and files that will always be copied (also if part of 'file-excludes') -->
