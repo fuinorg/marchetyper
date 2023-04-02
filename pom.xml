@@ -166,9 +166,9 @@
             </dependency>
 
             <dependency>
-              <groupId>org.apache.maven.plugin-tools</groupId>
-              <artifactId>maven-plugin-annotations</artifactId>
-              <version>3.4</version>
+                <groupId>org.apache.maven.plugin-tools</groupId>
+                <artifactId>maven-plugin-annotations</artifactId>
+                <version>3.4</version>
             </dependency>
 
             <dependency>
@@ -187,6 +187,12 @@
                 <groupId>com.jcabi</groupId>
                 <artifactId>jcabi-maven-slf4j</artifactId>
                 <version>0.12.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-assertj3</artifactId>
+                <version>2.9.1</version>
             </dependency>
 
         </dependencies>

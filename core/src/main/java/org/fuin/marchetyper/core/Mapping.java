@@ -142,21 +142,23 @@ public final class Mapping {
     /**
      * Verifies if the condition applies for a given file.
      * 
-     * @param defaultFileExpr
-     *            Default regular file name expression used to determine if the replacement should be applied. May be <code>null</code> if
-     *            there is no default.
+     * @param defaultRegExFilenameSelector
+     *            Regular expression that works on filenames. It will be used to determine if the replacement should be applied at all for
+     *            the given type of file. May be <code>null</code> if all file types are OK. It's something like
+     *            "(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile" to identify if it's a text file. It will ONLY be used in case this
+     *            mapping has neither a {@link #fileExpr} nor a {@link #pathExpr} defined (both are {@literal null}).
      * @param file
-     *            File name and path to verify the rul against.
+     *            File name and path to verify the rule against.
      * 
      * @return TRUE if the rule matches.
      */
-    public final boolean applies(final String defaultFileExpr, final File file) {
+    public final boolean applies(final String defaultRegExFilenameSelector, final File file) {
         if (fileExpr == null) {
             if (pathExpr == null) {
-                if (defaultFileExpr == null) {
+                if (defaultRegExFilenameSelector == null) {
                     return true;
                 }
-                return file.getName().matches(defaultFileExpr);
+                return file.getName().matches(defaultRegExFilenameSelector);
             }
             return file.getPath().replace(File.separatorChar, '/').matches(pathExpr);
         }

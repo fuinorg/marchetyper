@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Application configuration.
  */
-public interface Config {
+public interface Config extends FileMatcher {
 
     /**
      * Returns the source directory.
@@ -118,41 +118,5 @@ public interface Config {
      * @return Regular expression.
      */
     public String getTextFiles();
-
-    /**
-     * Determines if a file should be included.
-     *
-     * @param file File to test.
-     *
-     * @return {@literal true} if the file should be included base on the inclusion pattern.
-     */
-    public boolean includes(File file);
-
-    /**
-     * Determines if a file should be excluded.
-     *
-     * @param file File to test.
-     *
-     * @return {@literal true} if the file should be excluded base on the exclusion pattern.
-     */
-    public boolean excludes(File file);
-
-    /**
-     * Determines if a file is considered binary.
-     *
-     * @param file File to test.
-     *
-     * @return {@literal true} if the file is interpreted as binary.
-     */
-    public boolean isBinary(File file);
-
-    /**
-     * Determines if a file is considered text.
-     *
-     * @param file File to test.
-     *
-     * @return {@literal true} if the file is interpreted as text.
-     */
-    public boolean isText(File file);
 
 }

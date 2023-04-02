@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 /**
- * Test for {@link PathMapper}.
+ * Test for {@link SimplePathMapper}.
  */
 public final class PathMapperTest {
 
@@ -40,7 +40,7 @@ public final class PathMapperTest {
         final File targetDir = new File("target" + this.getClass().getSimpleName());
         final String targetPath = path(targetDir);
         //@formatter:off
-        final PathMapper testee = new PathMapper(srcDir, targetDir,
+        final SimplePathMapper testee = new SimplePathMapper(srcDir, targetDir,
                 new Mapping("b/c", "__bc__"),
                 new Mapping("e/f/g", "__efg__"),
                 new Mapping("x/y/z", "__xyz__"));

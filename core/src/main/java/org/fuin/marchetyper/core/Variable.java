@@ -101,8 +101,6 @@ public final class Variable {
     }
 
     void afterUnmarshal(final Unmarshaller unmarshaller, final Object parent) {
-        final Config config = (Config) parent;
-        final Archetype archetype = config.getArchetype();
         if (name == null) {
             throw new ConstraintViolationException("A 'name' attribute is required [" + name + "]");
         }

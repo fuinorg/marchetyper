@@ -19,28 +19,21 @@ package org.fuin.marchetyper.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.fuin.objects4j.common.Contract;
-import org.fuin.utils4j.Utils4J;
-import org.fuin.utils4j.fileprocessor.FileHandlerResult;
-import org.fuin.utils4j.fileprocessor.FileProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,8 +121,40 @@ public final class MavenArchetyper {
         final File archetypePostGenerateGroovy = new File(metaInf, "archetype-post-generate.groovy");
 
         copyPostGenerateFile(postGenerateFile, archetypePostGenerateGroovy);
-        final Files destFiles = copyFiles(srcDir, destDir, config, mappings, archetypeResources);
-        createArchetypeMetadata(destDir, metaInfMaven, config, archetypeResources, destFiles);
+
+        PathMapper pathMapper = new SimplePathMapper(srcDir, archetypeResources, config.getPathMappings());
+        if (config.isMaskDotFile()) {
+            pathMapper = new DotFileMapper(pathMapper);
+        }
+
+        final FileCopy fileCopy = new FileCopy.Builder().srcBaseDir(srcDir).destBaseDir(destDir).pathMapper(pathMapper).fileMatcher(config)
+                .headerProvider(createHeaderProvider(config)).defaultRegExFilenameSelector(config.getTextFiles()).mappings(mappings)
+                .build();
+        final FileCopyResult result = fileCopy.copy();
+
+        createArchetypeMetadata(destDir, metaInfMaven, config, archetypeResources, result);
+
+    }
+
+    private static FileCopy.HeaderProvider createHeaderProvider(final Config config) {
+        return (writer) -> {
+            try {
+                writer.write("#set( $symbol_pound = '#' )" + System.lineSeparator());
+                writer.write("#set( $symbol_dollar = '$' )" + System.lineSeparator());
+                writer.write("#set( $symbol_escape = '\\' )" + System.lineSeparator());
+
+                writer.write("#set( $delim = '.,_-/' )" + System.lineSeparator());
+                writer.write("#set( $empty = '' )" + System.lineSeparator());
+                writer.write(
+                        "#set( $StringUtils = $empty.class.forName('org.codehaus.plexus.util.StringUtils') )" + System.lineSeparator());
+                for (Variable v : config.getVariables()) {
+                    writer.write(
+                            "#set( $" + v.getName() + " = " + v.getTransformation().getCode(v.getSource()) + " )" + System.lineSeparator());
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException("Failed to write header", ex);
+            }
+        };
 
     }
 
@@ -167,13 +192,13 @@ public final class MavenArchetyper {
     }
 
     private void createArchetypeMetadata(final File destDir, final File metaInfMavenDir, final Config config, final File resourcesDir,
-            final Files files) {
+            final FileCopyResult result) {
 
         final VelocityEngine ve = createVelocityEngine();
         final VelocityContext context = new VelocityContext();
         context.put("archetype", config.getArchetype());
-        context.put("textFiles", wrap(files.textFiles));
-        context.put("binaryFiles", wrap(files.binaryFiles));
+        context.put("textFiles", wrap(result.getRelativizedTextFiles(resourcesDir)));
+        context.put("binaryFiles", wrap(result.getRelativizedBinaryFiles(resourcesDir)));
 
         merge(ve, context, "archetype-metadata.xml", new File(metaInfMavenDir, "archetype-metadata.xml"));
 
@@ -201,114 +226,8 @@ public final class MavenArchetyper {
         return ve;
     }
 
-    private static Files copyFiles(final File srcDir, final File destDir, final Config config, final List<Mapping> mappings,
-            final File archetypeResources) {
-
-        final PathMapper pathMapper = new PathMapper(srcDir, archetypeResources, config.getPathMappings());
-
-        final Files files = new Files();
-
-        allFiles(srcDir).stream().filter((file) -> {
-            if (config.includes(file)) {
-                return true;
-            }
-            return !config.excludes(file);
-        }).forEach((srcFile) -> {
-
-            final File destFile = pathMapper.map(srcFile);
-            if (!destFile.getParentFile().exists()) {
-                destFile.getParentFile().mkdirs();
-            }
-            if (config.isBinary(srcFile)) {
-                final File targetFile = copyBinaryFile(config, srcDir, srcFile, destDir, destFile);
-                addDestFile(files.binaryFiles, archetypeResources, targetFile);
-            } else if (config.isText(srcFile)) {
-                final File targetFile = copyTextFile(config, srcDir, srcFile, destDir, destFile,
-                        config.getTextFiles(), config.getVariables(), mappings);
-                addDestFile(files.textFiles, archetypeResources, targetFile);
-            } else {
-                throw new IllegalStateException("File found that is neither binary nor text file: " + srcFile);
-            }
-
-        });
-
-        return files;
-    }
-
-    private static void addDestFile(final List<File> files, final File archetypeResourcesDir, final File file) {
-        final Path filePath = file.toPath();
-        final Path parentPathToStrip = archetypeResourcesDir.toPath();
-        final File relativeFile = parentPathToStrip.relativize(filePath).toFile();
-        files.add(relativeFile);
-    }
-
-    private static File maskDotFile(final Config config, final File destDir, final File destFile) {
-        if (config.isMaskDotFile() && destFile.getName().startsWith(".")) {
-            LOG.info("Applying ARCHETYPE-505 workaround to: {}", Utils4J.getRelativePath(destDir, destFile));
-            return new File(destFile.getParentFile(), "_" + destFile.getName());
-        }
-        return destFile;
-    }
-
-    private static File copyBinaryFile(final Config config, final File srcDir, final File srcFile, final File destDir, final File destFileX) {
-        final File destFile = maskDotFile(config, destDir, destFileX);
-        LOG.info("Copy binary {} to {}", Utils4J.getRelativePath(srcDir, srcFile), Utils4J.getRelativePath(destDir, destFile));
-        try {
-            FileUtils.copyFile(srcFile, destFile);
-            return destFile;
-        } catch (final IOException ex) {
-            throw new RuntimeException("Error copying binary file from " + srcFile + " to " + destFile, ex);
-        }
-    }
-
-    private static File copyTextFile(final Config config, final File srcDir, final File srcFile, final File destDir, final File destFileX,
-                                     final String textFiles, final List<Variable> variables, final List<Mapping> mappings) {
-        final File destFile = maskDotFile(config, destDir, destFileX);
-        LOG.info("Copy text {} to {}", Utils4J.getRelativePath(srcDir, srcFile), Utils4J.getRelativePath(destDir, destFile));
-        try (final ReplacingFileReader reader = new ReplacingFileReader(srcFile, 1024, textFiles, mappings)) {
-            try (final Writer writer = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(destFile), Charset.forName("utf-8")))) {
-                // Add prefix
-                writer.write("#set( $symbol_pound = '#' )" + System.lineSeparator());
-                writer.write("#set( $symbol_dollar = '$' )" + System.lineSeparator());
-                writer.write("#set( $symbol_escape = '\\' )" + System.lineSeparator());
-
-                writer.write("#set( $delim = '.,_-/' )" + System.lineSeparator());
-                writer.write("#set( $empty = '' )" + System.lineSeparator());
-                writer.write("#set( $StringUtils = $empty.class.forName('org.codehaus.plexus.util.StringUtils') )" + System.lineSeparator());
-                for (Variable v : variables) {
-                    writer.write("#set( $" + v.getName() + " = " + v.getTransformation().getCode(v.getSource()) + " )" + System.lineSeparator());
-                }
-                // Replace rest
-                IOUtils.copy(reader, writer);
-                return destFile;
-            }
-        } catch (final IOException ex) {
-            throw new RuntimeException("Error copying text file from " + srcFile + " to " + destFile, ex);
-        }
-    }
-
-    private static List<File> allFiles(final File dir) {
-        final List<File> files = new ArrayList<>();
-        new FileProcessor((file) -> {
-            if (file.isFile()) {
-                files.add(file);
-            }
-            return FileHandlerResult.CONTINUE;
-        }).process(dir);
-        return files;
-    }
-
     private static List<VelocityFileWrapper> wrap(List<File> files) {
         return files.stream().map(file -> new VelocityFileWrapper(file)).collect(Collectors.toList());
-    }
-
-    private static class Files {
-
-        public List<File> binaryFiles = new ArrayList<>();
-
-        public List<File> textFiles = new ArrayList<>();
-
     }
 
     public static final class VelocityFileWrapper {

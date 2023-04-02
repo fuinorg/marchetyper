@@ -28,13 +28,11 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-
-import javax.validation.constraints.NotNull;
 
 import org.fuin.objects4j.common.ConstraintViolationException;
 import org.fuin.objects4j.common.Contract;
-import org.fuin.objects4j.common.Nullable;
 
 /**
  * Replaces tokens before returning lines.
@@ -54,82 +52,22 @@ public final class ReplacingFileReader extends Reader {
     private int replaceIdx;
 
     /**
-     * Constructor with array and buffer size.
-     * 
-     * @param file
-     *            File to read.
-     * @param bufferSize
-     *            Size of the read buffer.
-     * @param defaultFileExpr
-     *            Default regular file name expression used to determine if the replacement should be applied. May be <code>null</code> if
-     *            there is not default.
-     * @param mappings
-     *            Key/Value pairs to replace.
-     * 
-     * @throws FileNotFoundException
-     *             The given file does not exist.
-     */
-    public ReplacingFileReader(@NotNull final File file, final int bufferSize, @Nullable final String defaultFileExpr,
-            @NotNull final Mapping... mappings) throws FileNotFoundException {
-        this(file, bufferSize, defaultFileExpr, mappings == null ? (List<Mapping>) null : Arrays.asList(mappings));
-    }
-
-    /**
-     * Constructor with array.
-     * 
-     * @param file
-     *            File to read.
-     * @param defaultFileExpr
-     *            Default regular file name expression used to determine if the replacement should be applied. May be <code>null</code> if
-     *            there is not default.
-     * @param mappings
-     *            Key/Value pairs to replace.
-     * 
-     * @throws FileNotFoundException
-     *             The given file does not exist.
-     */
-    public ReplacingFileReader(@NotNull final File file, @Nullable final String defaultFileExpr, @NotNull final Mapping... mappings)
-            throws FileNotFoundException {
-        this(file, 1024, defaultFileExpr, mappings == null ? (List<Mapping>) null : Arrays.asList(mappings));
-    }
-
-    /**
-     * Constructor with list.
-     * 
-     * @param file
-     *            File to read.
-     * @param defaultFileExpr
-     *            Default regular file name expression used to determine if the replacement should be applied. May be <code>null</code> if
-     *            there is not default.
-     * @param mappings
-     *            Key/Value pairs to replace.
-     * 
-     * @throws FileNotFoundException
-     *             The given file does not exist.
-     */
-    public ReplacingFileReader(@NotNull final File file, @Nullable final String defaultFileExpr, @NotNull final List<Mapping> mappings)
-            throws FileNotFoundException {
-        this(file, 1024, defaultFileExpr, mappings);
-    }
-
-    /**
      * Constructor with all data.
      * 
      * @param file
      *            File to read.
      * @param bufferSize
      *            Size of the read buffer.
-     * @param defaultFileExpr
-     *            Default regular file name expression used to determine if the replacement should be applied. May be <code>null</code> if
-     *            there is not default.
+     * @param defaultRegExFilenameSelector
+     *            Regular expression that works on filenames. It will be used to determine if the replacement should be applied at all for
+     *            the given type of file. May be <code>null</code> if all file types are OK. It's something like
+     *            "(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile" to identify if it's a text file. It will ONLY be used in case a
+     *            mapping has neither a {@link #fileExpr} nor a {@link #pathExpr} defined (both are {@literal null}).
      * @param mappings
      *            Key/Value pairs to replace.
-     * 
-     * @throws FileNotFoundException
-     *             The given file does not exist.
      */
-    public ReplacingFileReader(@NotNull final File file, final int bufferSize, @Nullable final String defaultFileExpr,
-            @NotNull final List<Mapping> mappings) throws FileNotFoundException {
+    private ReplacingFileReader(final File file, final int bufferSize, final String defaultRegExFilenameSelector,
+            final List<Mapping> mappings) {
         super();
         Contract.requireArgNotNull("file", file);
         Contract.requireArgNotNull("mappings", mappings);
@@ -152,7 +90,7 @@ public final class ReplacingFileReader extends Reader {
             if (mapping.getReplace().trim().length() == 0) {
                 throw new ConstraintViolationException("The argument 'replace' contains empty string: " + mapping);
             }
-            if (mapping.applies(defaultFileExpr, file)) {
+            if (mapping.applies(defaultRegExFilenameSelector, file)) {
                 validMappings.add(mapping);
             }
         }
@@ -169,9 +107,14 @@ public final class ReplacingFileReader extends Reader {
                 maxTokenLen = searchList[i].length();
             }
         }
-        this.delegate = new PushbackReader(
-                new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("utf-8")), bufferSize),
-                maxTokenLen + 1);
+        try {
+            this.delegate = new PushbackReader(
+                    new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("utf-8")), bufferSize),
+                    maxTokenLen + 1);
+        } catch (final FileNotFoundException ex) {
+            throw new IllegalStateException(
+                    "The existance of the file was verified in the builder, but now the file does not exist anymore: " + file, ex);
+        }
 
     }
 
@@ -243,6 +186,111 @@ public final class ReplacingFileReader extends Reader {
     @Override
     public final void close() throws IOException {
         delegate.close();
+    }
+
+    /**
+     * Creates a new instance of the outer class.
+     */
+    public static final class Builder {
+
+        private File file;
+
+        private int bufferSize;
+
+        private String defaultRegExFilenameSelector;
+
+        private List<Mapping> mappings;
+
+        /**
+         * Constructor with file.
+         * 
+         * @param file
+         *            File to read.
+         * @throws FileNotFoundException
+         *             the given file does not exist.
+         */
+        public Builder(final File file) throws FileNotFoundException {
+            Contract.requireArgNotNull("file", file);
+            if (!file.exists()) {
+                throw new FileNotFoundException("File does not exist: " + file);
+            }
+            this.file = file;
+            this.bufferSize = 1024;
+            this.mappings = new ArrayList<>();
+        }
+
+        /**
+         * Sets the size of the buffer for the underlying input stream.
+         * 
+         * @param bufferSize
+         *            Size of the input stream buffer to use.
+         * 
+         * @return The builder.
+         */
+        public Builder bufferSize(final int bufferSize) {
+            this.bufferSize = bufferSize;
+            return this;
+        }
+
+        /**
+         * Sets the default file pattern to use in case a mapping has not defined it's own.
+         * 
+         * @param defaultRegExFilenameSelector
+         *            Regular expression that works on filenames. It will be used to determine if the replacement should be applied at all
+         *            for the given type of file. May be <code>null</code> if all file types are OK. It's something like
+         *            "(.*\.(properties|md|java|yml|yaml|xml))|Dockerfile" to identify if it's a text file. It will ONLY be used in case
+         *            this mapping has neither a {@link #fileExpr} nor a {@link #pathExpr} defined (both are {@literal null}).
+         * 
+         * @return The Builder.
+         */
+        public Builder defaultRegExFilenameSelector(final String defaultRegExFilenameSelector) {
+            this.defaultRegExFilenameSelector = defaultRegExFilenameSelector;
+            return this;
+        }
+
+        /**
+         * Sets the list of mappings.
+         * 
+         * @param mappings
+         *            List of find/replace operations to apply.
+         * 
+         * @return The builder.
+         */
+        public Builder mappings(final List<Mapping> mappings) {
+            if (mappings == null) {
+                this.mappings = Collections.emptyList();
+            } else {
+                this.mappings = new ArrayList<>(mappings);
+            }
+            return this;
+        }
+
+        /**
+         * Sets the array of mappings.
+         * 
+         * @param mappings
+         *            Array of find/replace operations to apply.
+         * 
+         * @return The builder.
+         */
+        public Builder mapping(final Mapping... mappings) {
+            if (mappings == null) {
+                this.mappings = Collections.emptyList();
+            } else {
+                this.mappings = Arrays.asList(mappings);
+            }
+            return this;
+        }
+
+        /**
+         * Creates a new instance.
+         * 
+         * @return The new instance.
+         */
+        public ReplacingFileReader build() {
+            return new ReplacingFileReader(file, bufferSize, defaultRegExFilenameSelector, mappings);
+        }
+
     }
 
 }

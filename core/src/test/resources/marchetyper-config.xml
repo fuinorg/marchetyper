@@ -48,7 +48,7 @@
 
     <!-- Directories and files that will not be copied -->
     <file-excludes>
-        <filter path=".*/target/.*" />
+        <filter path=".*/test-project/example/target/.*" />
         <filter path=".*/\..*/.*"/>
         <filter file="^\..*" />
         <filter file=".*\.log" />
