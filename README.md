@@ -2,8 +2,7 @@
 Makes Maven Archetype creation a breeze
 
 [![Java Maven Build](https://github.com/fuinorg/marchetyper/actions/workflows/maven.yml/badge.svg)](https://github.com/fuinorg/marchetyper/actions/workflows/maven.yml)
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.fuin/marchetyper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.fuin/marchetyper/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.fuin.marchetyper/marchetyper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.fuin.marchetyper/marchetyper/)
 [![LGPLv3 License](http://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl.html)
 [![Java Development Kit 11](https://img.shields.io/badge/JDK-11-green.svg)](https://openjdk.java.net/projects/jdk/11/)
 
