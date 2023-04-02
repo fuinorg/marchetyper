@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.fuin.marchetyper</groupId>
         <artifactId>marchetyper</artifactId>
-        <version>0.3.0</version>
+        <version>0.4.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>marchetyper-maven-plugin</artifactId>
