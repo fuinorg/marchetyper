@@ -36,6 +36,8 @@ class DotFileMapperTest {
         assertThat(new DotFileMapper(file -> file).map(new File("abc."))).isEqualTo(new File("abc."));
         assertThat(new DotFileMapper(file -> file).map(new File(".abc"))).isEqualTo(new File("_.abc"));
 
+        assertThat(new DotFileMapper(file -> new File("d/e/f/.abc")).map(new File("a/b/c/.abc"))).isEqualTo(new File("d/e/f/_.abc"));
+
     }
 
 }

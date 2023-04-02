@@ -48,8 +48,8 @@ public final class DotFileMapper implements PathMapper {
         }
         File result = delegate.map(file);
         if (result.getName().startsWith(".")) {
-            LOG.info("Applying ARCHETYPE-505 workaround to: {}", file);
-            result = new File(file.getParentFile(), "_" + file.getName());
+            LOG.info("Applying ARCHETYPE-505 workaround to: {}", result);
+            result = new File(result.getParentFile(), "_" + result.getName());
         }
         return result;
     }
