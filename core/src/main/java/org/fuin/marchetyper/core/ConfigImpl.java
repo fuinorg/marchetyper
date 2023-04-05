@@ -251,7 +251,7 @@ public final class ConfigImpl implements Config {
     @Override
     public final boolean isBinary(final File srcFile) {
         if (binaryFiles == null) {
-            binaryFiles = ".*\\.(jar)";
+            return !isText(srcFile);
         }
         return srcFile.getName().matches(binaryFiles);
     }
@@ -259,7 +259,7 @@ public final class ConfigImpl implements Config {
     @Override
     public final boolean isText(final File srcFile) {
         if (textFiles == null) {
-            binaryFiles = ".*\\.(properties|md|java|xml)";
+            textFiles = ".*\\.(properties|md|java|xml|yaml|yml|json|txt)";
         }
         return srcFile.getName().matches(textFiles);
     }
