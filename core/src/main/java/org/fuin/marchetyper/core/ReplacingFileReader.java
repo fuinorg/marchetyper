@@ -121,6 +121,11 @@ public final class ReplacingFileReader extends Reader {
     @Override
     public final int read() throws IOException {
 
+        if (maxTokenLen == 0) {
+            // Shortcut in case there are no valid mappings (= no replacement required)
+            return delegate.read();
+        }
+
         if (replaceStr != null) {
             // Currently returning replacement
             if (replaceIdx < replaceStr.length()) {

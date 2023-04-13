@@ -64,6 +64,32 @@ public final class ReplacingFileReaderTest {
     }
 
     @Test
+    public void testNoMatchAtAll() throws IOException {
+
+        // PREPARE
+        final File file = new File("src/test/resources/" + this.getClass().getSimpleName() + ".txt");
+        final List<String> lines = new ArrayList<>();
+
+        try (final LineNumberReader testee = new LineNumberReader(
+                new ReplacingFileReader.Builder(file).defaultRegExFilenameSelector(".*\\.(txt)")
+                        .mapping(new Mapping("${a}", "AAA", null, ".*\\.(foo)"),
+                                new Mapping("Hello", "Hallo", null, ".*\\.(foo)"),
+                                new Mapping("world", "Welt", null, ".*\\.(foo)")
+                        ).build())) {
+
+            // TEST
+            String line;
+            while ((line = testee.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+
+        // VERIFY
+        assertThat(lines).containsExactly("This is just", "Some text with a variable ${a}", "Hello, world");
+
+    }
+
+    @Test
     public void testFile() throws IOException {
 
         // PREPARE
