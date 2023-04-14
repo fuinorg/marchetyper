@@ -7,7 +7,10 @@ Makes Maven Archetype creation a breeze
 [![Java Development Kit 11](https://img.shields.io/badge/JDK-11-green.svg)](https://openjdk.java.net/projects/jdk/11/)
 
 ## Why?
-Creating a Maven Archetype from a project is already possible using the [create-from-project](https://maven.apache.org/archetype/maven-archetype-plugin/create-from-project-mojo.html) Mojo. Unfortunately it's pretty limited and does not allow much individual customization. That's where the **marchetyper** kicks in. It has a specialized configuration file and allows repeating the creation process every time your existing example project has changed.
+You may argue "Creating a Maven Archetype from a project is already possible using the [create-from-project](https://maven.apache.org/archetype/maven-archetype-plugin/create-from-project-mojo.html) Mojo". You are right. Unfortunately it's pretty limited and does not allow much individual customization. That's where the **marchetyper** kicks in. It has a specialized configuration file and allows **repeating the creation process** every time your existing example project has changed. As your example project will change over time, having an *automated build* that automatically updates your Archetype is the major benefit of **marchetyper**.
+
+## Getting started
+See [marchetyper-archetype](https://github.com/fuinorg/marchetyper-archetype) - An specialized Archetype that allows automated creation of the necessary Maven multi-module project structure for your own Archetype build.
 
 ## Plugin
 The plugin uses a config file named 'marchetyper-config.xml' in the same directory where the 'pom.xml' is.
@@ -16,7 +19,7 @@ The plugin uses a config file named 'marchetyper-config.xml' in the same directo
 <plugin>
     <groupId>org.fuin.marchetyper</groupId>
     <artifactId>marchetyper-maven-plugin</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.1</version>
     <executions>
         <execution>
             <id>generate</id>
