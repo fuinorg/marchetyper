@@ -129,6 +129,8 @@ public final class FileCopyResult {
         public FileCopyResult build() {
             final FileCopyResult tmp = delegate;
             delegate = new FileCopyResult();
+            Collections.sort(delegate.binaryFiles);
+            Collections.sort(delegate.textFiles);
             return tmp;
         }
 
