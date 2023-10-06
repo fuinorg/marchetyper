@@ -19,10 +19,10 @@ package org.fuin.marchetyper.core;
 
 import java.io.File;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.fuin.objects4j.common.Nullable;
+
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * Defines a path and/or file filter with expressions.

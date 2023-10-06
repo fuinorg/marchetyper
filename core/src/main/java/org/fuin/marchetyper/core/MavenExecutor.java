@@ -21,8 +21,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Properties;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.maven.shared.invoker.CommandLineConfigurationException;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -36,6 +34,8 @@ import org.fuin.objects4j.common.Contract;
 import org.fuin.objects4j.common.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Executes a Maven build.

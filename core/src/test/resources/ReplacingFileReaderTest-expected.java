@@ -3,13 +3,13 @@ package ${pkgName}.app;
 
 import java.lang.management.ManagementFactory;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.inject.Inject;
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.inject.Inject;
+import jakarta.management.MBeanServer;
+import jakarta.management.ObjectName;
 
 import com.udojava.jmx.wrapper.JMXBeanWrapper;
 

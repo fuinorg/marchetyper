@@ -6,6 +6,10 @@ Makes Maven Archetype creation a breeze
 [![LGPLv3 License](http://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl.html)
 [![Java Development Kit 11](https://img.shields.io/badge/JDK-11-green.svg)](https://openjdk.java.net/projects/jdk/11/)
 
+## Versions
+- 0.5.x (or later) = **Java 11** with new **jakarta** namespace
+- 0.4.x = **Java 11** before namespace change from 'javax' to 'jakarta'
+
 ## Why?
 You may argue "Creating a Maven Archetype from a project is already possible using the [create-from-project](https://maven.apache.org/archetype/maven-archetype-plugin/create-from-project-mojo.html) Mojo". You are right. Unfortunately it's pretty limited and does not allow much individual customization. That's where the **marchetyper** kicks in. It has a specialized configuration file and allows **repeating the creation process** every time your existing example project has changed. As your example project will change over time, having an *automated build* that automatically updates your Archetype is the major benefit of **marchetyper**.
 
