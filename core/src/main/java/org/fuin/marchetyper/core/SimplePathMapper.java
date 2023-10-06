@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.fuin.objects4j.common.ConstraintViolationException;
 import org.fuin.objects4j.common.Contract;
 import org.fuin.utils4j.Utils4J;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Replaces a source path segment (structure of directories) with a target path segment. Example: Given a directory structure
