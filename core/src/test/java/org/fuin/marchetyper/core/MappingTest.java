@@ -28,7 +28,7 @@ import org.xmlunit.assertj3.XmlAssert;
 /**
  * Test for the {@link Mapping} class.
  */
-class TestMapping {
+class MappingTest {
 
     @Test
     void testMarshal() throws Exception {

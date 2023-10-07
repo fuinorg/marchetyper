@@ -19,6 +19,7 @@ package org.fuin.marchetyper.core;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.util.List;
 
 import org.fuin.utils4j.JaxbUtils;
@@ -28,14 +29,15 @@ import org.xmlunit.assertj3.XmlAssert;
 /**
  * Test for the {@link Archetype} class.
  */
-class TestArchetype {
+class ArchetypeTest {
 
     @Test
     void testMarshal() throws Exception {
 
         // PREPARE
         final Property property = new Property("groupId", "com.mycompany", "org.fuin.examples");
-        final Archetype testee = new Archetype("org.fuin.archetypes", "example-archetype", "0.1.0-SNAPSHOT", property);
+        final Archetype testee = new Archetype.Builder().groupId("org.fuin.archetypes").artifactId("example-archetype")
+                .version("0.1.0-SNAPSHOT").addProperty(property).build();
 
         // TEST
         final String actualXml = JaxbUtils.marshal(testee, Archetype.class);
@@ -74,7 +76,8 @@ class TestArchetype {
 
         // PREPARE
         final Property property = new Property("groupId", "com.mycompany", "org.fuin.examples");
-        final Archetype testee = new Archetype("org.fuin.archetypes", "example-archetype", "0.1.0-SNAPSHOT", property);
+        final Archetype testee = new Archetype.Builder().groupId("org.fuin.archetypes").artifactId("example-archetype")
+                .version("0.1.0-SNAPSHOT").addProperty(property).build();
 
         // TEST
         final Property found = testee.findProperty("groupId");
@@ -92,15 +95,22 @@ class TestArchetype {
 
         // PREPARE
         final Property property = new Property("groupId", "com.mycompany", "org.fuin.examples");
-        final Archetype testee = new Archetype("org.fuin.archetypes", "example-archetype", "0.1.0-SNAPSHOT", property);
+        final Archetype testee = new Archetype.Builder().groupId("org.fuin.archetypes").artifactId("example-archetype")
+                .version("0.1.0-SNAPSHOT").addProperty(property).build();
 
         // TEST
-        final List<String> result = testee.toArchetypeGenerateArgs();
+        final List<String> result = testee.toArchetypeGenerateArgs(new File("."));
 
         // VERIFY
         assertThat(result).containsOnly("-DarchetypeGroupId=org.fuin.archetypes", "-DarchetypeArtifactId=example-archetype",
                 "-DarchetypeVersion=0.1.0-SNAPSHOT", "-DgroupId=org.fuin.examples", "-DinteractiveMode=false");
 
+    }
+
+    @Test
+    public void testRetrieveVersion() {
+        assertThat(Archetype.retrieveVersion(null, "0.1.0")).isEqualTo("0.1.0");
+        assertThat(Archetype.retrieveVersion(new File("src/test/resources/example-pom.xml"), null)).isEqualTo("1.0.0");
     }
 
 }

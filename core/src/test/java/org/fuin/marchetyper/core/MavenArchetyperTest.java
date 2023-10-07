@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -44,8 +45,12 @@ public class MavenArchetyperTest {
 
         // VERIFY
         final File pomXmlFile = new File(targetTestProject, "archetype/pom.xml");
+        final String actualXml = FileUtils.readFileToString(pomXmlFile, StandardCharsets.UTF_8);
         final File customPomFile = new File(targetTestProject, "marchetyper/custom-pom.xml");
-        assertThat(pomXmlFile).hasSameTextualContentAs(customPomFile);
+        final String expectedXml = FileUtils.readFileToString(customPomFile, StandardCharsets.UTF_8).replace("((ARCHETYPE_VERSION))",
+                "0.1.0-SNAPSHOT");
+
+        assertThat(actualXml).isEqualTo(expectedXml);
 
     }
 

@@ -26,7 +26,7 @@ import org.xmlunit.assertj3.XmlAssert;
 /**
  * Test for the {@link Property} class.
  */
-class TestProperty {
+class PropertyTest {
 
     @Test
     void testMarshal() throws Exception {

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,31 +87,28 @@ public final class MavenArchetyper {
             throw new RuntimeException("Error deleting destination directory " + destDir, ex);
         }
         final File srcDir = config.getSrcDir(baseDir);
-        final File customPomFile = config.getCustomPomFile(baseDir);
-        final File postGenerateFile = config.getPostGenerateFile(baseDir);
-        generate(customPomFile, postGenerateFile, srcDir, destDir);
+        generate(baseDir, srcDir, destDir);
     }
 
     /**
      * Generated the archetype with the given base directory.
      *
-     * @param customPomFile
-     *            Custom POM file or {@literal null} if no custom pom is available.
-     * @param postGenerateFile
-     *            Post generate Groovy file or {@literal null} if no post generation file is configured.
+     * @param baseDir
+     *            Base directory.
      * @param srcDir
      *            Source directory.
      * @param destDir
      *            Destination directory.
      */
-    public void generate(File customPomFile, final File postGenerateFile, final File srcDir, final File destDir) {
+    public void generate(final File baseDir, final File srcDir, final File destDir) {
 
-        LOG.info("customPomFile: {}", customPomFile);
+        final File postGenerateFile = config.getPostGenerateFile(baseDir);
+
         LOG.info("postGenerateFile: {}", postGenerateFile);
         LOG.info("destDir: {}", destDir);
         LOG.info("srcDir: {}", srcDir);
 
-        copyOrCreatePom(customPomFile, destDir);
+        copyOrCreatePom(baseDir, destDir);
 
         final File destSrc = new File(destDir, "src");
         final File destSrcMain = new File(destSrc, "main");
@@ -168,13 +166,19 @@ public final class MavenArchetyper {
         }
     }
 
-    private void copyOrCreatePom(final File customPomFile, final File destDir) {
+    private void copyOrCreatePom(final File baseDir, final File destDir) {
+
+        final File customPomFile = config.getCustomPomFile(baseDir);
+        LOG.info("customPomFile: {}", customPomFile);
+        final String version = config.getArchetype().retrieveVersion(baseDir);
+        LOG.info("version: {}", version);
 
         if (customPomFile == null) {
 
             final VelocityEngine ve = createVelocityEngine();
             final VelocityContext context = new VelocityContext();
             context.put("archetype", config.getArchetype());
+            context.put("archetypeVersion", version);
 
             merge(ve, context, "pom.xml", new File(destDir, "pom.xml"));
 
@@ -182,7 +186,9 @@ public final class MavenArchetyper {
 
             final File destPomFile = new File(destDir, "pom.xml");
             try {
-                FileUtils.copyFile(customPomFile, destPomFile);
+                final String xml = FileUtils.readFileToString(customPomFile, StandardCharsets.UTF_8).replace("((ARCHETYPE_VERSION))",
+                        version);
+                FileUtils.write(destPomFile, xml, StandardCharsets.UTF_8);
             } catch (final IOException ex) {
                 throw new RuntimeException("Error copying custom POM from '" + customPomFile + "' to: " + destPomFile, ex);
             }
