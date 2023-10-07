@@ -12,7 +12,7 @@
         <variable name="pkgPath" source="pkgName" transform="DOT_2_SLASH" />
     </variables>
 
-    <archetype group-id="org.fuin.example-archetype" artifact-id="marchetyper-test-archetype" version="0.1.0-SNAPSHOT">
+    <archetype group-id="org.fuin.example-archetype" artifact-id="marchetyper-test-archetype" version-pom-file="pom.xml">
         <property name="groupId" default="com.mycompany" test="org.fuin.examples" />
         <property name="artifactId" default="myapp" test="example-app" />
         <property name="version" default="0.1.0-SNAPSHOT" test="0.1.0-SNAPSHOT" />

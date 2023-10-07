@@ -26,7 +26,7 @@ import org.xmlunit.assertj3.XmlAssert;
 /**
  * Test for the {@link Variable} class.
  */
-class TestVariable {
+class VariableTest {
 
     @Test
     void testMarshal() throws Exception {

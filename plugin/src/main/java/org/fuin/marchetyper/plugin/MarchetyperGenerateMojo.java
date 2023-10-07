@@ -42,7 +42,7 @@ public final class MarchetyperGenerateMojo extends AbstractMojo {
     /**
      * The base directory.
      */
-    @Parameter(property = "configFile", defaultValue = "${basedir}", readonly = true)
+    @Parameter(property = "basedir", defaultValue = "${basedir}", readonly = true)
     private File baseDir;
 
     /**
