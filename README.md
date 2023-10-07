@@ -29,7 +29,7 @@ The plugin uses a config file named 'marchetyper-config.xml' in the same directo
 <plugin>
     <groupId>org.fuin.marchetyper</groupId>
     <artifactId>marchetyper-maven-plugin</artifactId>
-    <version>0.4.1</version>
+    <version>0.6.0</version>
     <executions>
         <execution>
             <id>generate</id>
