@@ -10,6 +10,12 @@ Makes Maven Archetype creation a breeze
 - 0.5.x (or later) = **Java 11** with new **jakarta** namespace
 - 0.4.x = **Java 11** before namespace change from 'javax' to 'jakarta'
 
+## What is it?
+You can think about the **marchetyper** as a specialized program that copies files from a source directory to a target directory.
+During this process, names of files, directories and the content of text files will be changed by predefined rules.
+The source directory contains a fully functional Java application that is used to create a [Maven Archetype](https://maven.apache.org/guides/introduction/introduction-to-archetypes.html) from it. The target directory will contain the Archetype after copying is finished.
+It also creates the necessary `archetype-metadata.xml` file automatically.
+
 ## Why?
 You may argue "Creating a Maven Archetype from a project is already possible using the [create-from-project](https://maven.apache.org/archetype/maven-archetype-plugin/create-from-project-mojo.html) Mojo". You are right. Unfortunately it's pretty limited and does not allow much individual customization. That's where the **marchetyper** kicks in. It has a specialized configuration file and allows **repeating the creation process** every time your existing example project has changed. As your example project will change over time, having an *automated build* that automatically updates your Archetype is the major benefit of **marchetyper**.
 
