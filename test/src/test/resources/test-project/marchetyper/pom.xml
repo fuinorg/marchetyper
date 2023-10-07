@@ -15,7 +15,7 @@
             <plugin>
                 <groupId>org.fuin.marchetyper</groupId>
                 <artifactId>marchetyper-maven-plugin</artifactId>
-                <version>0.6.0</version>
+                <version>0.7.0-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <id>generate</id>
