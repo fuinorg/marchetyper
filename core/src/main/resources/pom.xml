@@ -7,7 +7,7 @@
 
 	<groupId>${archetype.groupId}</groupId>
 	<artifactId>${archetype.artifactId}</artifactId>
-	<version>${archetype.version}</version>
+	<version>${archetypeVersion}</version>
 	<packaging>maven-archetype</packaging>
 
 	<properties>
